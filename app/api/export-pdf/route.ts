@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { generatePDF } from "@/lib/pdf";
 import { createClient } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   const { guideId } = await req.json();
 

@@ -4,6 +4,8 @@ import { generateAndStoreLogo } from "@/lib/dalle-logo";
 import { createClient } from "@/lib/supabase";
 import { BrandInput } from "@/types/brand";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const body: BrandInput = await req.json();
