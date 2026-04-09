@@ -218,7 +218,7 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
   const accent = result.colorPalette[4]?.hex ?? result.colorPalette[1]?.hex ?? "#888";
 
   async function handleDownloadPDF() {
-    if (!isPremium) { window.location.href = "/upgrade"; return; }
+    if (!isPremium) { window.location.href = `/upgrade?guideId=${guideId}`; return; }
     setDownloading(true);
     try {
       const res = await fetch("/api/export-pdf", {
@@ -514,11 +514,11 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
                 Download alles als PDF, ontvang logo-varianten en social media templates.
               </p>
               <a
-                href="/upgrade"
+                href={`/upgrade?guideId=${guideId}`}
                 className="inline-block mt-2 py-3 px-8 bg-white rounded-xl font-semibold text-sm hover:bg-neutral-100 transition-colors"
                 style={{ color: primary }}
               >
-                Upgrade naar Premium — €14/maand →
+                Upgrade naar Premium — eenmalig €14 →
               </a>
             </div>
           </div>

@@ -393,9 +393,9 @@ export default function Home() {
             </div>
             <p className="text-sm text-neutral-600 mb-1">Premium</p>
             <p className="text-4xl font-bold mb-1">
-              €14<span className="text-lg font-normal text-neutral-500">/mnd</span>
+              €14<span className="text-lg font-normal text-neutral-500"> eenmalig</span>
             </p>
-            <p className="text-sm text-neutral-500 mb-6">Alles onbeperkt</p>
+            <p className="text-sm text-neutral-500 mb-6">Per brand guide · levenslang toegang</p>
             <ul className="space-y-2.5 text-sm text-neutral-600 mb-8">
               {[
                 "Alles uit gratis",
@@ -448,8 +448,8 @@ export default function Home() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-6">
             <span className="font-bold tracking-tight">
-              <span className="text-white">Brand</span>
-              <span className="text-violet-400">Forge</span>
+              <span className="text-white">Merk</span>
+              <span className="text-violet-400">ly</span>
             </span>
             <span className="text-sm text-neutral-600">AI-powered brand guides</span>
           </div>

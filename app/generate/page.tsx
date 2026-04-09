@@ -197,8 +197,8 @@ export default function GeneratePage() {
         {/* Nav */}
         <nav className="sticky top-0 z-40 flex items-center justify-between px-8 py-5 border-b border-neutral-900/50 bg-neutral-950/80 backdrop-blur-xl">
           <a href="/" className="text-xl font-bold tracking-tight">
-            <span className="text-white">Brand</span>
-            <span className="text-violet-400">Forge</span>
+            <span className="text-white">Merk</span>
+            <span className="text-violet-400">ly</span>
           </a>
           <a href="/" className="text-sm text-neutral-400 hover:text-white transition-colors">
             ← Terug

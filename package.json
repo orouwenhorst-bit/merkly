@@ -1,5 +1,5 @@
 {
-  "name": "brandforge",
+  "name": "merkly",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
+    "@react-pdf/renderer": "^4.3.0",
     "@supabase/supabase-js": "^2.101.1",
     "next": "16.2.2",
     "openai": "^6.33.0",
-    "puppeteer": "^24.40.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "stripe": "^22.0.0"

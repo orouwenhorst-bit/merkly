@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase";
 import Stripe from "stripe";
 
@@ -7,43 +7,32 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const sig = req.headers.get("stripe-signature");
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!sig || !secret) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  }
 
   let event: Stripe.Event;
-
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    event = getStripe().webhooks.constructEvent(body, sig, secret);
   } catch (err) {
-    return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
+    console.error("Webhook signature verification failed:", err);
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   const supabase = createClient();
 
-  switch (event.type) {
-    case "customer.subscription.created":
-    case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
-
-      await supabase
-        .from("profiles")
-        .update({
-          is_premium: subscription.status === "active",
-          stripe_subscription_id: subscription.id,
-        })
-        .eq("stripe_customer_id", customerId);
-      break;
-    }
-
-    case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
-      const customerId = subscription.customer as string;
-
-      await supabase
-        .from("profiles")
-        .update({ is_premium: false, stripe_subscription_id: null })
-        .eq("stripe_customer_id", customerId);
-      break;
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const guideId = session.metadata?.guideId;
+    if (guideId && session.payment_status === "paid") {
+      const { error } = await supabase
+        .from("brand_guides")
+        .update({ is_premium: true })
+        .eq("id", guideId);
+      if (error) console.error("Failed to mark guide premium:", error);
     }
   }
 

@@ -59,7 +59,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           <ShareButton />
         </div>
 
-        <BrandGuidePreview result={result} isPremium={false} guideId={id} />
+        <BrandGuidePreview result={result} isPremium={Boolean(guide.is_premium)} guideId={id} />
       </div>
     </main>
   );
