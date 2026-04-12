@@ -7,9 +7,131 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
+/**
+ * LIGHT generation — only what's needed for the free preview.
+ * Saves ~75% tokens vs the full call.
+ */
+export async function generateBrandGuideLight(input: BrandInput): Promise<BrandGuideResult> {
+  const lightPrompt = `Je bent een senior brand strategist. Maak een BEKNOPTE merkidentiteit-preview.
+
+BEDRIJFSGEGEVENS:
+- Naam: ${input.companyName}
+- Branche: ${input.industry}
+- Sfeer: ${input.mood}
+- Doelgroep: ${input.targetAudience}
+${input.description ? `- Beschrijving: ${input.description}` : ""}
+${input.values ? `- Kernwaarden: ${input.values}` : ""}
+${input.preferredColor ? `- VOORKEURSKLEUR (verplicht als basis): ${input.preferredColor}` : ""}
+
+Genereer ALLEEN deze velden (niets meer). Schrijf alles in het Nederlands.
+
+KLEURENPALET: Exact 7 kleuren: 2 primair, 2 secundair, 3 neutraal.
+${input.preferredColor ? `De EERSTE primaire kleur MOET exact ${input.preferredColor} zijn.` : ""}
+Geef per kleur: creatieve naam, HEX, en category.
+
+TYPOGRAFIE: Kies 2 Google Fonts (display + body). VARIEER — geen Inter/Poppins/Montserrat/Roboto tenzij echt passend.
+
+Retourneer ALLEEN geldige JSON:
+
+{
+  "companyName": "${input.companyName}",
+  "strategy": {
+    "mission": "Eén zin",
+    "vision": "Eén zin",
+    "coreValues": [{ "value": "Naam", "description": "Korte uitleg" }],
+    "brandStory": "2-3 zinnen",
+    "personas": [],
+    "personalityTraits": ["adj1", "adj2", "adj3", "adj4", "adj5"],
+    "personalityDescription": "1 zin"
+  },
+  "colorPalette": {
+    "colors": [
+      { "name": "Naam", "hex": "#HEX", "rgb": "", "cmyk": "", "pantone": "", "usage": "Kort", "category": "primary" }
+    ],
+    "ratioGuideline": "",
+    "accessibility": []
+  },
+  "typography": {
+    "fonts": [
+      { "name": "FontNaam", "category": "display", "weights": [400, 700], "source": "Google Fonts", "googleFontsUrl": "https://fonts.googleapis.com/css2?family=FontNaam:wght@400;700&display=swap", "fallback": "serif", "usage": "Koppen" }
+    ],
+    "typeScale": [],
+    "pairingRationale": "",
+    "googleFontsUrl": ""
+  },
+  "toneOfVoice": {
+    "voiceAttributes": ["woord1", "woord2", "woord3", "woord4"],
+    "doList": [],
+    "dontList": [],
+    "tagline": "Max 6 woorden",
+    "boilerplate": "",
+    "examples": []
+  },
+  "brandVoiceExamples": {
+    "heroHeadline": "Max 8 woorden",
+    "subHeadline": "Max 15 woorden",
+    "instagramCaption": "",
+    "adCopy": "",
+    "emailSubjectLine": "",
+    "aboutUs": "",
+    "callToAction": "2-4 woorden"
+  },
+  "imageryGuidelines": null,
+  "iconographyGuidelines": null,
+  "graphicElements": null,
+  "logoGuidelines": { "doList": [], "dontList": [], "clearSpaceRule": "", "minimumSizes": { "digitalPx": 24, "printMm": 15 } },
+  "usageExamples": null,
+  "iconKey": "een-key-uit-de-lijst: ${ICON_KEYS.join(", ")}"
+}`;
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 2500,
+    messages: [{ role: "user", content: lightPrompt }],
+  });
+
+  const text = response.content[0].type === "text" ? response.content[0].text : "";
+
+  let raw: Record<string, unknown>;
+  try {
+    const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
+    raw = JSON.parse(cleaned);
+  } catch {
+    throw new Error("Claude retourneerde geen geldige JSON: " + text.slice(0, 300));
+  }
+
+  const brandGuide = raw as Omit<BrandGuideResult, "logoSvg" | "logoIconSvg" | "brandPatternSvg" | "tagline" | "brandPersonality" | "brandStory"> & { iconKey?: string };
+
+  const colors = brandGuide.colorPalette?.colors ?? [];
+  const primary = colors.find(c => c.category === "primary")?.hex ?? "#1a1a1a";
+  const accent = colors.find(c => c.category === "secondary")?.hex ?? colors[1]?.hex ?? "#888888";
+
+  const logoSvg = generateWordmarkSvg(input.companyName, input.industry, input.mood, primary, accent);
+  const logoIconSvg = generateIconSvg(input.companyName, input.industry, input.mood, primary, accent);
+  const brandPatternSvg = generatePatternSvg(primary, accent);
+  const iconSvg = renderIcon(brandGuide.iconKey);
+
+  const tagline = brandGuide.toneOfVoice?.tagline ?? "";
+  const brandPersonality = brandGuide.strategy?.personalityTraits ?? [];
+  const brandStory = brandGuide.strategy?.brandStory ?? "";
+
+  return {
+    ...brandGuide,
+    iconSvg,
+    logoSvg,
+    logoIconSvg,
+    brandPatternSvg,
+    tagline,
+    brandPersonality,
+    brandStory,
+  } as BrandGuideResult;
+}
+
+/**
+ * FULL generation — all 11 sections. Only called after payment.
+ */
 export async function generateBrandGuide(input: BrandInput): Promise<BrandGuideResult> {
-  const prompt = `Je bent een senior brand strategist en grafisch ontwerper met 15 jaar ervaring bij een top-bureau.
-Je maakt brand guides die klanten omverblazen — alles klopt, van kleurpsychologie tot typografische hiërarchie.
+  const prompt = `Je bent een senior brand strategist en visueel ontwerper met 15+ jaar ervaring bij top-bureaus zoals Pentagram, Wolff Olins en Kossmann.dejong. Je maakt merkstijlgidsen die strategisch onderbouwd zijn — elke visuele keuze vloeit voort uit de merkstrategie.
 
 BEDRIJFSGEGEVENS:
 - Naam: ${input.companyName}
@@ -17,123 +139,276 @@ BEDRIJFSGEGEVENS:
 - Gewenste sfeer/uitstraling: ${input.mood}
 - Doelgroep: ${input.targetAudience}
 ${input.description ? `- Bedrijfsbeschrijving: ${input.description}` : ""}
-${input.values ? `- Kernwaarden: ${input.values}` : ""}
-${input.preferredColor ? `- VOORKEURSKLEUR (verplicht als basis): ${input.preferredColor} — gebruik dit EXACTE hex als de primaire merkkleur (positie 1 in colorPalette) en bouw de rest van het palet hier op (harmoniërend, ondersteunend).` : ""}
-${input.logoUrl ? `- Er is een logo aangeleverd` : ""}
+${input.values ? `- Kernwaarden van de oprichter: ${input.values}` : ""}
+${input.preferredColor ? `- VOORKEURSKLEUR (verplicht als basis): ${input.preferredColor} — gebruik dit EXACTE hex als de eerste primaire merkkleur en bouw het palet hierop.` : ""}
 
-INSTRUCTIES:
-Genereer een volledige brand guide als JSON. Wees specifiek en praktisch.
+===== STAP 1: MERKSTRATEGIE (dit stuurt ALLES) =====
 
-KLEUREN:
-- Kies kleuren die ECHT bij de branche en sfeer passen — geen generieke blauw/grijs combinaties.
-- Zorg voor voldoende contrast: primaire kleur moet leesbare witte tekst erop toestaan (donker genoeg).
-- De achtergrondkleur moet subtiel zijn (licht), niet wit (#FFFFFF) maar iets warmer of koeler.
-- De accentkleur moet opvallen naast de primaire kleur, niet te dichtbij in tint.
-- Geef elke kleur een creatieve, merkgebonden naam (niet "Primaire kleur" maar bijv. "Bos Groen" of "Zonsondergang Oranje").
-${input.preferredColor ? `- BELANGRIJK: De eerste kleur in colorPalette MOET exact ${input.preferredColor} zijn. Bouw vervolgens 4 ondersteunende kleuren die er natuurlijk bij passen (analoog/complementair).` : ""}
+Begin met de strategielaag. Alle visuele keuzes die je straks maakt MOETEN logisch voortvloeien uit deze strategie.
 
-TYPOGRAFIE — heel belangrijk dat dit varieert per branche en sfeer:
-- Kies lettertypes die ECHT op Google Fonts staan. Geen verzonnen namen.
-- Het display font moet karakter hebben dat past bij het merk. VARIEER actief — gebruik NIET standaard Inter, Poppins, Montserrat of Roboto tenzij het echt het beste past.
+MISSIE: Waarom bestaat dit bedrijf? Eén krachtige zin.
+VISIE: Waar gaat dit bedrijf heen? Eén ambitieuze zin.
+KERNWAARDEN: Exact 3 tot 5 waarden, elk met een concrete uitleg van 1-2 zinnen die beschrijft hoe deze waarde zich uit in de praktijk.
+MERKVERHAAL: Eén alinea (3-4 zinnen) ontstaansverhaal of bestaansreden in wij-vorm. Authentiek, emotioneel, niet generiek.
+PERSONA'S: Exact 2 persona's uit de doelgroep. Geef per persona: naam, leeftijd, beroep, 2-3 behoeften, 2-3 frustraties, en een korte beschrijving (1 zin).
+MERKPERSOONLIJKHEID: Exact 5 adjectieven die het merk beschrijven, plus een korte uitleg (2 zinnen) van hoe die persoonlijkheid zich uit in communicatie en vormgeving.
+
+===== STAP 2: VISUELE IDENTITEIT (afgeleid van strategie) =====
+
+KLEURENPALET:
+- Exact 2 PRIMAIRE kleuren — de signature kleuren van het merk
+- Exact 2 SECUNDAIRE kleuren — ondersteunend, harmoniërend
+- Exact 3 NEUTRALE kleuren — voor tekst, achtergronden, subtiele accenten
+${input.preferredColor ? `- De EERSTE primaire kleur MOET exact ${input.preferredColor} zijn.` : ""}
+- Primaire kleuren moeten krachtig en herkenbaar zijn.
+- Zorg dat de primaire kleur leesbare witte tekst toestaat (donker genoeg, WCAG AA).
+- Neutrale kleuren: één donkere tekstkleur, één lichte achtergrond (niet #FFFFFF), één medium grijs.
+- Geef per kleur: creatieve merknaam, HEX, RGB (als "rgb(R, G, B)"), CMYK (als "cmyk(C%, M%, Y%, K%)"), en de dichtstbijzijnde Pantone-code.
+- Geef de kleurverhouding-richtlijn (bijv. "60% neutraal, 30% primair, 10% secundair/accent").
+- Geef 4 toegankelijkheidscombinaties: test de primaire kleur als tekst op wit, wit op primair, donker neutraal op licht neutraal, en primair op licht neutraal. Bereken de contrastratio en beoordeel WCAG AA en AAA.
+
+TYPOGRAFIE:
+- Kies exact 2 typefaces (display + body), optioneel een 3e accent font.
+- ALLE fonts MOETEN op Google Fonts staan. Geen verzonnen namen.
+- VARIEER actief — gebruik NIET standaard Inter, Poppins, Montserrat of Roboto tenzij het echt het beste past.
 - Inspiratie per type merk:
-  * Luxe / mode / lifestyle → serif: Playfair Display, Cormorant Garamond, Italiana, DM Serif Display, Fraunces
-  * Modern tech / SaaS → grotesk: Space Grotesk, General Sans, Manrope, Sora, Plus Jakarta Sans
-  * Ambachtelijk / horeca → display serif of warme sans: Lora, Bitter, Libre Caslon Text, Recoleta-achtige zoals "Frank Ruhl Libre", Bricolage Grotesque
-  * Speels / creatief → expressief: Bricolage Grotesque, Big Shoulders Display, Unbounded, Caprasimo, Fraunces
-  * Editorial / professioneel → klassiek: Crimson Pro, Source Serif 4, IBM Plex Serif, Newsreader
-  * Stoer / sport → industrieel: Anton, Bebas Neue, Archivo Black, Oswald, Barlow Condensed
-  * Duurzaam / wellness → zacht en warm: Nunito, Quicksand, DM Sans, Outfit, Albert Sans
-- Het body font moet goed leesbaar zijn in kleine formaten en harmoniëren met het display font.
-- Geef de EXACTE Google Fonts URL met de juiste family names (URL-encoded met +) en weights 400/500/600/700 waar nodig.
+  * Luxe / mode → serif: Playfair Display, Cormorant Garamond, DM Serif Display, Fraunces
+  * Modern tech / SaaS → grotesk: Space Grotesk, Manrope, Sora, Plus Jakarta Sans
+  * Ambachtelijk / horeca → warm: Lora, Bitter, Libre Caslon Text, Bricolage Grotesque
+  * Speels / creatief → expressief: Bricolage Grotesque, Big Shoulders Display, Unbounded
+  * Professioneel → klassiek: Crimson Pro, Source Serif 4, IBM Plex Serif
+  * Stoer / sport → industrieel: Anton, Bebas Neue, Archivo Black, Barlow Condensed
+  * Duurzaam / wellness → zacht: Nunito, Quicksand, DM Sans, Outfit
+- Geef per font: naam, categorie ("display"/"body"/"accent"), beschikbare gewichten (als array van nummers), bron ("Google Fonts"), de individuele Google Fonts URL, fallback-stack, en gebruiksbeschrijving.
+- Leg in 1-2 zinnen uit WAAROM deze fonts samen werken (pairing rationale).
+- Maak een type scale met exact deze levels: H1, H2, H3, H4, H5, H6, body, small, caption. Per level: fontFamily (naam), weight, sizePx, lineHeight (als string bijv. "1.2"), letterSpacing (als string bijv. "0px"), en usage (waarvoor).
+- Geef één gecombineerde Google Fonts URL voor alle fonts samen.
 
-COPY:
-- Schrijf alles in het Nederlands. Wees concreet, inspirerend en merkwaardig.
-- De heroHeadline moet krachtig zijn, max 8 woorden, direct de doelgroep aanspreken.
-- De Instagram caption moet echt voelen — met relevante emoji en hashtags.
-- De aboutUs moet authentiek klinken, niet generiek.
-- Het merkverhaal moet emotie oproepen en de missie helder maken.
+BEELDTAAL & FOTOGRAFIE:
+- photoStyle: beschrijf de fotostijl (warm/koel, candid/geposeerd, licht)
+- colorTreatment: kleurbehandeling (verzadigd, desaturated, duotone, etc.)
+- subjects: welke onderwerpen passen bij het merk
+- composition: compositieprincipes
+- doList: 3 richtlijnen voor goede beelden
+- dontList: 3 dingen om te vermijden
 
-LOGO ICOON:
-- Kies EXACT één iconKey uit deze lijst die het beste past bij de branche en het merk:
-${ICON_KEYS.join(", ")}
-- Geef alleen de exacte string van de gekozen key terug in het veld "iconKey".
+ICONOGRAFIE:
+- style: "line", "filled", of "duotone"
+- strokeWidth: bijv. "1.5px" of "2px"
+- cornerStyle: "rounded" of "sharp"
+- colorUsage: hoe kleuren worden toegepast op icons
 
-Retourneer ALLEEN geldige JSON zonder markdown. Exact dit formaat:
+GRAFISCHE ELEMENTEN:
+- description: beschrijf de visuele signature elementen van het merk
+- shapes: welke vormen worden gebruikt
+- patterns: beschrijf eventuele patronen of texturen
+- usage: waar en hoe deze elementen worden ingezet
+
+===== STAP 3: TONE OF VOICE =====
+
+STEMATTRIBUTEN: Exact 4 woorden die beschrijven hoe het merk klinkt.
+DO'S: 4 concrete richtlijnen voor woordkeuze en toon.
+DON'TS: 4 dingen die het merk NOOIT doet in communicatie.
+TAGLINE: Eén krachtige merkslogan van max 6 woorden.
+BOILERPLATE: Een standaard bedrijfsbeschrijving van 2-3 zinnen voor gebruik in footers, social media bio's, etc.
+VOORBEELDEN: Geef 6 voorbeeldzinnen voor deze contexten: "Social media post", "Website header", "E-mail nieuwsbrief", "Klantenservice", "Advertentie", "Foutmelding".
+
+BRAND VOICE VOORBEELDEN:
+- heroHeadline: krachtige websitekop, max 8 woorden
+- subHeadline: ondersteunende zin, max 15 woorden
+- instagramCaption: echte Instagram-caption met emoji en 5 hashtags
+- adCopy: 2 zinnen advertentietekst
+- emailSubjectLine: e-mailonderwerpregel, max 50 tekens
+- aboutUs: "Over ons" alinea van 3 zinnen
+- callToAction: CTA-knoptekst van 2-4 woorden
+
+===== STAP 4: LOGO & TOEPASSINGEN =====
+
+LOGO RICHTLIJNEN:
+- doList: 4 do's voor loggebruik
+- dontList: 4 don'ts voor logogebruik
+- clearSpaceRule: beschrijf de vrije-ruimte-regel (bijv. "Minimaal de hoogte van de letter 'M' uit het logo rondom")
+- minimumSizes: digitalPx (kleinste px voor scherm) en printMm (kleinste mm voor print)
+
+TOEPASSINGEN: Beschrijf kort hoe het merk eruitziet op elk van deze touchpoints:
+- businessCard: voorkant en achterkant
+- socialPost: Instagram post
+- emailSignature: e-mailhandtekening
+- letterhead: briefpapier
+- presentationSlide: presentatie titelslide
+- websiteHeader: website navigatie/header
+- merchandise: t-shirt of tas
+
+ICOON: Kies EXACT één iconKey uit deze lijst: ${ICON_KEYS.join(", ")}
+
+===== SAMENHANG-CHECK =====
+
+Voordat je het JSON-resultaat geeft, toets intern:
+1. Vloeien de kleurkeuzes logisch voort uit de merkpersoonlijkheid?
+2. Past de typografie bij de toon en doelgroep?
+3. Vertellen alle elementen samen hetzelfde verhaal?
+4. Is er genoeg contrast en variatie voor professioneel gebruik?
+Als iets niet klopt, pas het aan voordat je antwoordt.
+
+===== OUTPUT =====
+
+Schrijf alles in het Nederlands. Retourneer ALLEEN geldige JSON, geen markdown.
 
 {
   "companyName": "${input.companyName}",
-  "tagline": "Een pakkende slogan van maximaal 6 woorden",
-  "brandPersonality": ["Kernwoord1", "Kernwoord2", "Kernwoord3", "Kernwoord4", "Kernwoord5"],
-  "brandStory": "2-3 zinnen merkidentiteit in wij-vorm.",
-  "toneOfVoice": "Beschrijf in 2-3 zinnen hoe het merk communiceert.",
-  "colorPalette": [
-    { "name": "Creatieve naam voor primaire kleur", "hex": "#HEXCODE", "rgb": "rgb(R, G, B)", "usage": "Gebruik voor: hoofdknoppen, koppen, logo-achtergrond" },
-    { "name": "Creatieve naam voor secundaire kleur", "hex": "#HEXCODE", "rgb": "rgb(R, G, B)", "usage": "Gebruik voor: accenten en iconen" },
-    { "name": "Creatieve naam voor achtergrondkleur", "hex": "#HEXCODE (subtiel, niet #FFFFFF)", "rgb": "rgb(R, G, B)", "usage": "Gebruik voor: paginaachtergronden" },
-    { "name": "Creatieve naam voor tekstkleur", "hex": "#HEXCODE (donker)", "rgb": "rgb(R, G, B)", "usage": "Gebruik voor: hoofdtekst en paragrafen" },
-    { "name": "Creatieve naam voor accentkleur", "hex": "#HEXCODE (opvallend, contrasteert met primair)", "rgb": "rgb(R, G, B)", "usage": "Gebruik voor: CTA-knoppen en highlights" }
-  ],
-  "typography": {
-    "displayFont": "Google Fonts displaylettertype",
-    "bodyFont": "Google Fonts bodytekstlettertype",
-    "displayUsage": "Gebruik voor: koppen H1 en H2",
-    "bodyUsage": "Gebruik voor: broodtekst en UI",
-    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Font1:wght@400;700&family=Font2:wght@400;500&display=swap"
-  },
-  "brandVoiceExamples": {
-    "heroHeadline": "Een krachtige website-hoofdkop van max 8 woorden die direct aanspreekt",
-    "subHeadline": "Een ondersteunende zin van max 15 woorden die de waarde verduidelijkt",
-    "instagramCaption": "Een complete Instagram-caption met emoji en 5 relevante hashtags",
-    "adCopy": "Twee zinnen advertentietekst die converteert, specifiek voor deze doelgroep",
-    "emailSubjectLine": "Een e-mailonderwerpregel die wordt geopend (max 50 tekens)",
-    "aboutUs": "Een 'Over ons' alinea van 3 zinnen in de merkstijl",
-    "callToAction": "Een krachtige call-to-action knoptekst van 2-4 woorden"
-  },
-  "logoGuidelines": {
-    "doList": [
-      "Gebruik het logo op lichte en donkere achtergronden",
-      "Houd minimaal 20px vrije ruimte rondom het logo",
-      "Gebruik het logo in de primaire merkkleur of wit"
+  "strategy": {
+    "mission": "...",
+    "vision": "...",
+    "coreValues": [
+      { "value": "Waarde", "description": "Concrete uitleg..." }
     ],
-    "dontList": [
-      "Verander de verhoudingen van het logo niet",
-      "Gebruik geen effecten zoals slagschaduw op het logo",
-      "Plaats het logo nooit op een drukke achtergrond"
+    "brandStory": "...",
+    "personas": [
+      {
+        "name": "Voornaam",
+        "age": "Leeftijd",
+        "occupation": "Beroep",
+        "needs": ["behoefte1", "behoefte2"],
+        "frustrations": ["frustratie1", "frustratie2"],
+        "description": "Korte beschrijving"
+      }
+    ],
+    "personalityTraits": ["adj1", "adj2", "adj3", "adj4", "adj5"],
+    "personalityDescription": "Hoe de persoonlijkheid zich uit..."
+  },
+  "colorPalette": {
+    "colors": [
+      { "name": "Creatieve naam", "hex": "#HEX", "rgb": "rgb(R, G, B)", "cmyk": "cmyk(C%, M%, Y%, K%)", "pantone": "Pantone XXXX C", "usage": "Gebruik voor...", "category": "primary" }
+    ],
+    "ratioGuideline": "60% neutraal, 30% primair, 10% accent",
+    "accessibility": [
+      { "combination": "Primair op Wit", "foreground": "#HEX", "background": "#FFFFFF", "contrastRatio": "X.X:1", "wcagAA": true, "wcagAAA": false }
     ]
   },
-  "iconKey": "een-key-uit-de-lijst-hierboven",
+  "typography": {
+    "fonts": [
+      {
+        "name": "Font Name",
+        "category": "display",
+        "weights": [400, 700],
+        "source": "Google Fonts",
+        "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Font+Name:wght@400;700&display=swap",
+        "fallback": "Georgia, serif",
+        "usage": "Koppen en titels"
+      }
+    ],
+    "typeScale": [
+      { "level": "H1", "fontFamily": "Font Name", "weight": 700, "sizePx": 48, "lineHeight": "1.1", "letterSpacing": "-1px", "usage": "Pagina-titels" }
+    ],
+    "pairingRationale": "Waarom deze fonts samen werken...",
+    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Font1:wght@400;700&family=Font2:wght@400;500&display=swap"
+  },
+  "imageryGuidelines": {
+    "photoStyle": "...",
+    "colorTreatment": "...",
+    "subjects": "...",
+    "composition": "...",
+    "doList": ["...", "...", "..."],
+    "dontList": ["...", "...", "..."]
+  },
+  "iconographyGuidelines": {
+    "style": "line",
+    "strokeWidth": "1.5px",
+    "cornerStyle": "rounded",
+    "colorUsage": "..."
+  },
+  "graphicElements": {
+    "description": "...",
+    "shapes": "...",
+    "patterns": "...",
+    "usage": "..."
+  },
+  "toneOfVoice": {
+    "voiceAttributes": ["woord1", "woord2", "woord3", "woord4"],
+    "doList": ["...", "...", "...", "..."],
+    "dontList": ["...", "...", "...", "..."],
+    "tagline": "Max 6 woorden",
+    "boilerplate": "Standaard bedrijfsbeschrijving...",
+    "examples": [
+      { "context": "Social media post", "example": "..." },
+      { "context": "Website header", "example": "..." },
+      { "context": "E-mail nieuwsbrief", "example": "..." },
+      { "context": "Klantenservice", "example": "..." },
+      { "context": "Advertentie", "example": "..." },
+      { "context": "Foutmelding", "example": "..." }
+    ]
+  },
+  "brandVoiceExamples": {
+    "heroHeadline": "...",
+    "subHeadline": "...",
+    "instagramCaption": "...",
+    "adCopy": "...",
+    "emailSubjectLine": "...",
+    "aboutUs": "...",
+    "callToAction": "..."
+  },
+  "logoGuidelines": {
+    "doList": ["...", "...", "...", "..."],
+    "dontList": ["...", "...", "...", "..."],
+    "clearSpaceRule": "...",
+    "minimumSizes": { "digitalPx": 24, "printMm": 15 }
+  },
   "usageExamples": {
-    "businessCard": "Beschrijf het visitekaartje: achtergrondkleur, logo positie, typografie",
-    "socialPost": "Beschrijf een Instagram-post: achtergrond, tekststijl, kleurgebruik",
-    "emailSignature": "Beschrijf de e-mailhandtekening: opmaak, kleuren, lettertypes"
-  }
+    "businessCard": "...",
+    "socialPost": "...",
+    "emailSignature": "...",
+    "letterhead": "...",
+    "presentationSlide": "...",
+    "websiteHeader": "...",
+    "merchandise": "..."
+  },
+  "iconKey": "een-key-uit-de-lijst"
 }`;
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 3500,
+    max_tokens: 8000,
     messages: [{ role: "user", content: prompt }],
   });
 
   const text = response.content[0].type === "text" ? response.content[0].text : "";
 
-  let brandGuide: Omit<BrandGuideResult, "logoSvg" | "logoIconSvg" | "brandPatternSvg"> & { iconKey?: string };
+  let raw: Record<string, unknown>;
   try {
     const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
-    brandGuide = JSON.parse(cleaned);
+    raw = JSON.parse(cleaned);
   } catch {
-    throw new Error("Claude retourneerde geen geldige JSON: " + text.slice(0, 200));
+    throw new Error("Claude retourneerde geen geldige JSON: " + text.slice(0, 300));
   }
 
-  const primary = brandGuide.colorPalette[0]?.hex ?? "#1a1a1a";
-  const accent = brandGuide.colorPalette[4]?.hex ?? brandGuide.colorPalette[1]?.hex ?? "#888888";
+  // Cast parsed output
+  const brandGuide = raw as Omit<BrandGuideResult, "logoSvg" | "logoIconSvg" | "brandPatternSvg" | "tagline" | "brandPersonality" | "brandStory"> & { iconKey?: string };
 
-  // Generate logos programmatically — fast, consistent, always professional
+  // Extract colors for logo generation
+  const colors = brandGuide.colorPalette?.colors ?? [];
+  const primary = colors.find(c => c.category === "primary")?.hex ?? "#1a1a1a";
+  const accent = colors.find(c => c.category === "secondary")?.hex ?? colors[1]?.hex ?? "#888888";
+
+  // Generate logos programmatically
   const logoSvg = generateWordmarkSvg(input.companyName, input.industry, input.mood, primary, accent);
   const logoIconSvg = generateIconSvg(input.companyName, input.industry, input.mood, primary, accent);
   const brandPatternSvg = generatePatternSvg(primary, accent);
 
   const iconSvg = renderIcon(brandGuide.iconKey);
 
-  return { ...brandGuide, iconSvg, logoSvg, logoIconSvg, brandPatternSvg };
+  // Legacy compat aliases
+  const tagline = brandGuide.toneOfVoice?.tagline ?? "";
+  const brandPersonality = brandGuide.strategy?.personalityTraits ?? [];
+  const brandStory = brandGuide.strategy?.brandStory ?? "";
+
+  return {
+    ...brandGuide,
+    iconSvg,
+    logoSvg,
+    logoIconSvg,
+    brandPatternSvg,
+    tagline,
+    brandPersonality,
+    brandStory,
+  };
 }

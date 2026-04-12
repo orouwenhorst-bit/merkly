@@ -28,11 +28,21 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
     const guideId = session.metadata?.guideId;
     if (guideId && session.payment_status === "paid") {
+      // Mark as premium first
       const { error } = await supabase
         .from("brand_guides")
         .update({ is_premium: true })
         .eq("id", guideId);
       if (error) console.error("Failed to mark guide premium:", error);
+
+      // Trigger full premium generation in the background
+      // (non-blocking — the user can already see their page)
+      const origin = req.nextUrl.origin;
+      fetch(`${origin}/api/generate-premium`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guideId }),
+      }).catch(err => console.error("Failed to trigger premium generation:", err));
     }
   }
 

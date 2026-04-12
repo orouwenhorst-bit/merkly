@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateBrandGuide } from "@/lib/claude";
+import { generateBrandGuideLight } from "@/lib/claude";
 import { generateAndStoreLogo } from "@/lib/dalle-logo";
+import { generateLogoSvg, storeLogoSvg } from "@/lib/recraft-logo";
+import { deriveLogoVariants } from "@/lib/svg-processing";
+import { calculateAccessibility } from "@/lib/wcag";
 import { createClient } from "@/lib/supabase";
 import { BrandInput } from "@/types/brand";
 
@@ -14,11 +17,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Verplichte velden ontbreken" }, { status: 400 });
     }
 
-    // Generate brand guide (Claude) + programmatic logos in parallel
-    const result = await generateBrandGuide(body);
+    // Light generation — only preview content, saves ~75% tokens
+    const result = await generateBrandGuideLight(body);
+
+    // Server-side WCAG validation: overwrite Claude's estimates with real calculations
+    if (result.colorPalette?.colors?.length) {
+      result.colorPalette.accessibility = calculateAccessibility(result.colorPalette.colors);
+    }
 
     // Save to Supabase first to get the guide ID
     const supabase = createClient();
+    // Store input inside result JSONB for premium regeneration later
+    const resultWithInput = { ...result, _input: body };
+
     const { data: savedGuide, error } = await supabase
       .from("brand_guides")
       .insert({
@@ -26,7 +37,7 @@ export async function POST(req: NextRequest) {
         industry: body.industry,
         mood: body.mood,
         logo_url: body.logoUrl || null,
-        result,
+        result: resultWithInput,
       })
       .select("id")
       .single();
@@ -34,20 +45,52 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
 
     if (process.env.RECRAFT_API_KEY) {
-      // If user picked a preferred color, the palette is already built around it
-      // (Claude was instructed to use it as colorPalette[0]) so this stays consistent.
-      const logoColor = body.preferredColor || result.colorPalette[0]?.hex || "#000000";
-      const logoImageUrl = await generateAndStoreLogo(
-        savedGuide.id,
-        body.companyName,
+      const colors = result.colorPalette?.colors ?? [];
+      const primaryColor = body.preferredColor || colors.find(c => c.category === "primary")?.hex || colors[0]?.hex || "#000000";
+
+      // Try Recraft V4 first (SVG output), fall back to V2 (PNG)
+      const v4Result = await generateLogoSvg(
         body.industry,
         body.mood,
-        logoColor
+        primaryColor,
+        result.brandPersonality ?? [],
       );
-      if (logoImageUrl) {
-        result.logoImageUrl = logoImageUrl;
+
+      if (v4Result) {
+        // Store the primary SVG
+        const publicUrl = await storeLogoSvg(savedGuide.id, v4Result.svg);
+
+        // Derive color variants from the SVG
+        const variants = deriveLogoVariants(v4Result.svg, primaryColor);
+
+        // Store the raw SVG in the result for the preview component
+        result.logoImageUrl = publicUrl ?? undefined;
         result.iconSvg = undefined;
+        // Store logo variants for premium use later
+        result.logoVariants = {
+          fullColor: variants.fullColor,
+          monoBlack: variants.monoBlack,
+          monoWhite: variants.monoWhite,
+          monoPrimary: variants.monoPrimary,
+          transparent: variants.transparent,
+          recraftImageId: v4Result.imageId,
+        };
+
         await supabase.from("brand_guides").update({ result }).eq("id", savedGuide.id);
+      } else {
+        // Fallback: Recraft V2 (PNG output via legacy module)
+        const logoImageUrl = await generateAndStoreLogo(
+          savedGuide.id,
+          body.companyName,
+          body.industry,
+          body.mood,
+          primaryColor,
+        );
+        if (logoImageUrl) {
+          result.logoImageUrl = logoImageUrl;
+          result.iconSvg = undefined;
+          await supabase.from("brand_guides").update({ result }).eq("id", savedGuide.id);
+        }
       }
     }
 

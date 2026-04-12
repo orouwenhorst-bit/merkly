@@ -2,11 +2,13 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase";
 import { BrandGuideResult } from "@/types/brand";
 import BrandGuidePreview from "@/components/BrandGuidePreview";
+import PremiumGenerator from "@/components/PremiumGenerator";
 import ShareButton from "@/components/ShareButton";
 import { notFound } from "next/navigation";
 
-export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ResultPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
   const { id } = await params;
+  const sp = await searchParams;
 
   const supabase = createClient();
   const { data: guide, error } = await supabase
@@ -18,6 +20,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
   if (error || !guide) notFound();
 
   const result = guide.result as BrandGuideResult;
+  const needsPremiumGeneration = guide.is_premium && !result.imageryGuidelines && sp.paid === "1";
 
   const createdAt = new Date(guide.created_at).toLocaleDateString("nl-NL", {
     day: "numeric",
@@ -59,6 +62,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           <ShareButton />
         </div>
 
+        {needsPremiumGeneration && <PremiumGenerator guideId={id} />}
         <BrandGuidePreview result={result} isPremium={Boolean(guide.is_premium)} guideId={id} />
       </div>
     </main>
