@@ -30,7 +30,7 @@ export default function Home() {
 
         <div className="relative inline-flex items-center gap-2 bg-neutral-900/80 border border-neutral-800 rounded-full px-4 py-1.5 text-sm text-neutral-400 mb-8">
           <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-          AI-powered branding in 2 minuten
+          AI-huisstijl in 2 minuten
         </div>
         <h1 className="relative text-5xl sm:text-7xl font-bold tracking-tight max-w-3xl leading-tight mb-6">
           Jouw professionele
@@ -40,8 +40,8 @@ export default function Home() {
           </span>
         </h1>
         <p className="relative text-lg text-neutral-400 max-w-xl leading-relaxed mb-10">
-          Geen grafisch bureau nodig. Vul 4 velden in en ontvang een complete brand guide:
-          kleurenpalet, typografie, merkverhaal en tone of voice.
+          Geen grafisch bureau nodig. Beschrijf je merk en ontvang een complete brand guide:
+          kleurenpalet, typografie, merkverhaal, logo en meer.
         </p>
         <Link
           href="/generate"
@@ -50,7 +50,7 @@ export default function Home() {
           Genereer mijn huisstijl gratis
           <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">&rarr;</span>
         </Link>
-        <p className="relative text-sm text-neutral-600 mt-4">Geen account vereist. Resultaat binnen 30 seconden.</p>
+        <p className="relative text-sm text-neutral-600 mt-4">Geen account nodig &middot; Gratis te proberen</p>
 
         {/* Animated color swatches preview */}
         <div className="relative mt-16 flex items-center gap-3">
@@ -85,7 +85,7 @@ export default function Home() {
             {
               step: "1",
               title: "Vul in",
-              desc: "Beantwoord 4 simpele vragen over je bedrijf, branche, stijlvoorkeur en doelgroep.",
+              desc: "Beschrijf je bedrijf, branche, stijlvoorkeur en doelgroep in een kort formulier.",
               gradient: "from-violet-500 to-violet-600",
             },
             {
@@ -178,8 +178,8 @@ export default function Home() {
               iconBg: "bg-rose-500/10 text-rose-400",
             },
             {
-              title: "Brand voice copy",
-              desc: "Voorbeeldteksten voor je website, social media en e-mail die passen bij jouw merkpersoonlijkheid.",
+              title: "Voorbeeldteksten",
+              desc: "Website-, social media- en e-mailteksten die passen bij jouw merkpersoonlijkheid en tone of voice.",
               icon: (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
@@ -213,14 +213,14 @@ export default function Home() {
           {/* Decorative glow */}
           <div className="absolute -top-20 -right-20 w-60 h-60 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Fake brand guide header */}
+          {/* Brand guide header */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-sm font-bold">
-              B
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm font-bold">
+              V
             </div>
             <div>
-              <p className="font-semibold text-lg">Bloom Bakery</p>
-              <p className="text-xs text-neutral-500">Brand Guide - gegenereerd door Merkly</p>
+              <p className="font-semibold text-lg">Verde Studio</p>
+              <p className="text-xs text-neutral-500">Brand Guide &mdash; gegenereerd door Merkly</p>
             </div>
           </div>
 
@@ -230,14 +230,14 @@ export default function Home() {
               <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Kleurenpalet</p>
               <div className="flex gap-2">
                 {[
-                  { bg: "bg-indigo-600", label: "#4F46E5" },
-                  { bg: "bg-violet-500", label: "#8B5CF6" },
-                  { bg: "bg-fuchsia-400", label: "#E879F9" },
-                  { bg: "bg-slate-100", label: "#F1F5F9" },
-                  { bg: "bg-slate-800", label: "#1E293B" },
-                ].map(({ bg, label }) => (
-                  <div key={label} className="flex flex-col items-center gap-1.5">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${bg}`} />
+                  { hex: "#0F766E", label: "Primair" },
+                  { hex: "#2DD4BF", label: "Secundair" },
+                  { hex: "#F59E0B", label: "Accent" },
+                  { hex: "#F8FAFC", label: "Licht" },
+                  { hex: "#1E293B", label: "Donker" },
+                ].map(({ hex, label }) => (
+                  <div key={hex} className="flex flex-col items-center gap-1.5">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg" style={{ backgroundColor: hex }} />
                     <span className="text-[10px] text-neutral-600 font-mono">{label}</span>
                   </div>
                 ))}
@@ -249,31 +249,22 @@ export default function Home() {
               <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Typografie</p>
               <div className="space-y-3">
                 <div>
-                  <p className="text-2xl font-bold tracking-tight">Playfair Display</p>
-                  <p className="text-xs text-neutral-600">Koppen - serif, elegant</p>
+                  <p className="text-2xl font-bold tracking-tight">DM Serif Display</p>
+                  <p className="text-xs text-neutral-600">Koppen &mdash; serif, modern-klassiek</p>
                 </div>
                 <div>
-                  <p className="text-base text-neutral-300">Inter - body tekst</p>
-                  <p className="text-xs text-neutral-600">Broodtekst - sans-serif, modern</p>
+                  <p className="text-base text-neutral-300">Plus Jakarta Sans</p>
+                  <p className="text-xs text-neutral-600">Broodtekst &mdash; sans-serif, helder</p>
                 </div>
               </div>
             </div>
 
-            {/* Brand story excerpt */}
+            {/* Tagline & personality */}
             <div>
-              <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Merkverhaal</p>
-              <p className="text-sm text-neutral-400 leading-relaxed italic">
-                &ldquo;Bloom Bakery staat voor ambachtelijke kwaliteit met een moderne twist.
-                Elk product wordt met liefde bereid en vertelt het verhaal van seizoenen en
-                lokale ingrediënten...&rdquo;
-              </p>
-            </div>
-
-            {/* Tone of voice */}
-            <div>
-              <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Tone of Voice</p>
+              <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Merkpersoonlijkheid</p>
+              <p className="text-sm text-neutral-300 font-medium italic mb-3">&ldquo;Ontwerp met intentie&rdquo;</p>
               <div className="flex flex-wrap gap-2">
-                {["Warm", "Ambachtelijk", "Toegankelijk", "Persoonlijk"].map((tag) => (
+                {["Helder", "Vakkundig", "Warm", "Eigentijds", "Betrouwbaar"].map((tag) => (
                   <span
                     key={tag}
                     className="text-xs px-3 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20"
@@ -283,11 +274,21 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
+            {/* Brand voice */}
+            <div>
+              <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Tone of voice</p>
+              <p className="text-sm text-neutral-400 leading-relaxed italic">
+                &ldquo;Verde Studio gelooft dat goed ontwerp begint met luisteren.
+                Wij combineren Scandinavische eenvoud met ambachtelijke aandacht
+                voor detail en duurzame materialen.&rdquo;
+              </p>
+            </div>
           </div>
 
           {/* Bottom bar */}
           <div className="mt-8 pt-6 border-t border-neutral-800 flex items-center justify-between">
-            <p className="text-xs text-neutral-600">Voorbeeld brand guide - dit is wat je ontvangt</p>
+            <p className="text-xs text-neutral-600">Voorbeeld &mdash; je ontvangt ook logo, mockups en voorbeeldteksten</p>
             <Link
               href="/generate"
               className="text-xs text-violet-400 hover:text-violet-300 transition-colors font-medium"
@@ -298,53 +299,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Social Proof */}
+      {/* Waarom Merkly */}
       <section className="max-w-4xl mx-auto px-6 pb-32 text-center">
-        <p className="text-sm text-neutral-500 uppercase tracking-widest mb-4">Social proof</p>
-        <h2 className="text-3xl sm:text-4xl font-bold mb-4">Vertrouwd door 500+ ondernemers</h2>
-        <div className="flex items-center justify-center gap-1 mb-12">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <svg key={i} className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          ))}
-          <span className="text-sm text-neutral-400 ml-2">4.9/5 gemiddelde beoordeling</span>
-        </div>
+        <h2 className="text-3xl sm:text-4xl font-bold mb-4">Waarom Merkly?</h2>
+        <p className="text-neutral-400 mb-12 max-w-lg mx-auto">
+          Professionele branding was altijd duur en tijdrovend. Merkly maakt het toegankelijk voor iedereen.
+        </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {[
             {
-              quote: "Binnen 2 minuten had ik een complete huisstijl die er professioneel uitziet. Mijn grafisch ontwerper was verbaasd.",
-              name: "Lisa de Vries",
-              role: "Eigenaar, Bloom Studio",
+              title: "Snel",
+              desc: "Een complete brand guide in minder dan 2 minuten. Geen weken wachten op een bureau.",
+              gradient: "from-violet-500 to-violet-600",
             },
             {
-              quote: "Perfect voor startups. We hebben duizenden euro's bespaard op branding en het resultaat is top.",
-              name: "Mark Jansen",
-              role: "Co-founder, TechFlow",
+              title: "Compleet",
+              desc: "Van kleurenpalet en typografie tot merkverhaal, logo en mockups. Alles in &eacute;&eacute;n document.",
+              gradient: "from-fuchsia-500 to-fuchsia-600",
             },
             {
-              quote: "De tone of voice en het merkverhaal waren verrassend goed. Alsof iemand echt mijn bedrijf kent.",
-              name: "Sophie Bakker",
-              role: "Freelancer, SB Design",
+              title: "Betaalbaar",
+              desc: "Gratis te proberen. Premium voor &euro;14 eenmalig &mdash; een fractie van wat een bureau rekent.",
+              gradient: "from-cyan-500 to-cyan-600",
             },
-          ].map(({ quote, name, role }) => (
+          ].map(({ title, desc, gradient }) => (
             <div
-              key={name}
+              key={title}
               className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 text-left"
             >
-              <div className="flex gap-0.5 mb-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <svg key={i} className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 shadow-lg`}>
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
               </div>
-              <p className="text-sm text-neutral-300 leading-relaxed mb-4">&ldquo;{quote}&rdquo;</p>
-              <div>
-                <p className="text-sm font-medium">{name}</p>
-                <p className="text-xs text-neutral-500">{role}</p>
-              </div>
+              <h3 className="text-lg font-semibold mb-2">{title}</h3>
+              <p className="text-sm text-neutral-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: desc }} />
             </div>
           ))}
         </div>
@@ -365,8 +355,8 @@ export default function Home() {
               {[
                 "Kleurenpalet & typografie",
                 "Merkverhaal & tone of voice",
-                "Logo-richtlijnen",
-                "3 generaties per maand",
+                "Merkpersoonlijkheid & strategie",
+                "Online brand guide bekijken",
               ].map((f) => (
                 <li key={f} className="flex gap-2.5 items-start">
                   <svg className="w-4 h-4 text-neutral-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -388,7 +378,7 @@ export default function Home() {
             {/* Badge */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-xs font-semibold px-4 py-1 rounded-full shadow-lg">
-                Meest gekozen
+                Aanbevolen
               </span>
             </div>
             <p className="text-sm text-neutral-600 mb-1">Premium</p>
@@ -400,10 +390,10 @@ export default function Home() {
               {[
                 "Alles uit gratis",
                 "Download als PDF",
-                "Social media templates",
-                "Logo-varianten (SVG/PNG)",
-                "Onbeperkt genereren",
-                "Opslaan in dashboard",
+                "AI-gegenereerd logo (SVG/PNG)",
+                "Mockups (visitekaartje, social media)",
+                "Voorbeeldteksten & brand voice",
+                "WCAG kleurcontrast-check",
               ].map((f) => (
                 <li key={f} className="flex gap-2.5 items-start">
                   <svg className="w-4 h-4 text-violet-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -431,8 +421,8 @@ export default function Home() {
             Klaar om je merk te bouwen?
           </h2>
           <p className="relative text-neutral-400 mb-8 max-w-md mx-auto">
-            Sluit je aan bij 500+ ondernemers die hun professionele huisstijl hebben
-            gegenereerd met Merkly.
+            Genereer je eigen professionele huisstijl in minder dan twee minuten.
+            Gratis te proberen, geen account nodig.
           </p>
           <Link
             href="/generate"
@@ -451,7 +441,7 @@ export default function Home() {
               <span className="text-white">Merk</span>
               <span className="text-violet-400">ly</span>
             </span>
-            <span className="text-sm text-neutral-600">AI-powered brand guides</span>
+            <span className="text-sm text-neutral-600">AI-huisstijlgenerator</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-neutral-500">
             <Link href="/generate" className="hover:text-white transition-colors">

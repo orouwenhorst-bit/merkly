@@ -17,11 +17,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://merkly.nl";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Merkly — Jouw complete merkidentiteit in 60 seconden",
+    default: "Merkly — Jouw complete merkidentiteit in minuten",
     template: "%s | Merkly",
   },
   description:
-    "Merkly genereert in één minuut een volledige merkidentiteit: logo, kleurenpalet, typografie, merkstem en copy. Voor ondernemers die snel professioneel willen lanceren.",
+    "Merkly genereert in minder dan twee minuten een volledige merkidentiteit: logo, kleurenpalet, typografie, merkstem en copy. Voor ondernemers die snel professioneel willen lanceren.",
   applicationName: "Merkly",
   authors: [{ name: "Merkly" }],
   creator: "Merkly",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     locale: "nl_NL",
     url: "/",
     siteName: "Merkly",
-    title: "Merkly — Jouw complete merkidentiteit in 60 seconden",
+    title: "Merkly — Jouw complete merkidentiteit in minuten",
     description:
       "Van naam tot volledig brand book: logo, kleuren, typografie, merkstem en klaar-om-te-gebruiken copy. Speciaal voor Nederlandse ondernemers.",
     images: [
@@ -61,13 +61,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Merkly — Merkidentiteit in 60 seconden",
+        alt: "Merkly — Merkidentiteit in minuten",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Merkly — Jouw complete merkidentiteit in 60 seconden",
+    title: "Merkly — Jouw complete merkidentiteit in minuten",
     description:
       "AI-gegenereerde merkidentiteit voor Nederlandse ondernemers: logo, kleuren, typografie en copy.",
     images: ["/og-image.png"],
