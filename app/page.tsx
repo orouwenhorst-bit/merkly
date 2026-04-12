@@ -30,7 +30,7 @@ export default function Home() {
 
         <div className="relative inline-flex items-center gap-2 bg-neutral-900/80 border border-neutral-800 rounded-full px-4 py-1.5 text-sm text-neutral-400 mb-8">
           <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-          AI-huisstijl in 2 minuten
+          AI-powered branding in 2 minuten
         </div>
         <h1 className="relative text-5xl sm:text-7xl font-bold tracking-tight max-w-3xl leading-tight mb-6">
           Jouw professionele
