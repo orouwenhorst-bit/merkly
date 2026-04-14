@@ -134,37 +134,84 @@ export function generateIconSvg(
 </svg>`;
 }
 
-/** Subtle background pattern using brand color */
+/**
+ * Subtle background pattern using brand color.
+ * Picks one of 6 distinct pattern styles based on the primary color value
+ * so each brand gets a unique-feeling pattern.
+ */
 export function generatePatternSvg(primaryColor: string, accentColor: string): string {
-  // Parse hex to determine lightness — pick pattern style accordingly
   const hex = primaryColor.replace("#", "");
   const r = parseInt(hex.slice(0, 2), 16);
   const g = parseInt(hex.slice(2, 4), 16);
   const b = parseInt(hex.slice(4, 6), 16);
-  const luminance = (r * 299 + g * 587 + b * 114) / 1000;
 
-  // Dark brands get a lighter, subtler pattern; light brands get a bolder one
-  const opacity = luminance > 180 ? 0.08 : 0.1;
-  const strokeColor = luminance > 180 ? primaryColor : primaryColor;
+  // Deterministic pattern selection from color value (0–5)
+  const patternIndex = (r + g * 3 + b * 7) % 6;
+  const lo = 0.07;  // low opacity
+  const hi = 0.11;  // high opacity
 
-  const circleOpacity = luminance > 180 ? 0.08 : 0.1;
-  const lineOpacity = luminance > 180 ? 0.06 : 0.08;
-  const accentOpacity = luminance > 180 ? 0.1 : 0.12;
+  const wrap = (inner: string) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="none" style="width:100%;height:100%;display:block;"><defs><pattern id="p" patternUnits="userSpaceOnUse" width="48" height="48">${inner}</pattern></defs><rect width="100%" height="100%" fill="url(#p)"/></svg>`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="none" style="width:100%;height:100%;display:block;">
-  <defs>
-    <pattern id="p" patternUnits="userSpaceOnUse" width="40" height="40">
-      <circle cx="4" cy="4" r="1.5" fill="${primaryColor}" opacity="${circleOpacity}"/>
-      <circle cx="24" cy="4" r="1.5" fill="${primaryColor}" opacity="${circleOpacity}"/>
-      <circle cx="4" cy="24" r="1.5" fill="${primaryColor}" opacity="${circleOpacity}"/>
-      <circle cx="24" cy="24" r="1.5" fill="${primaryColor}" opacity="${circleOpacity}"/>
-      <circle cx="14" cy="14" r="2" fill="${accentColor}" opacity="${accentOpacity}"/>
-      <circle cx="34" cy="34" r="2" fill="${accentColor}" opacity="${accentOpacity}"/>
-      <line x1="0" y1="40" x2="40" y2="0" stroke="${primaryColor}" stroke-width="0.5" opacity="${lineOpacity}"/>
-      <line x1="20" y1="40" x2="40" y2="20" stroke="${accentColor}" stroke-width="0.5" opacity="${lineOpacity}"/>
-      <line x1="0" y1="20" x2="20" y2="0" stroke="${accentColor}" stroke-width="0.5" opacity="${lineOpacity}"/>
-    </pattern>
-  </defs>
-  <rect width="100%" height="100%" fill="url(#p)"/>
-</svg>`;
+  switch (patternIndex) {
+    // 0: dot grid — kleine stippen op regelmatig raster
+    case 0:
+      return wrap(`
+        <circle cx="6" cy="6" r="1.5" fill="${primaryColor}" opacity="${hi}"/>
+        <circle cx="30" cy="6" r="1.5" fill="${primaryColor}" opacity="${hi}"/>
+        <circle cx="6" cy="30" r="1.5" fill="${primaryColor}" opacity="${hi}"/>
+        <circle cx="30" cy="30" r="1.5" fill="${primaryColor}" opacity="${hi}"/>
+        <circle cx="18" cy="18" r="2" fill="${accentColor}" opacity="${hi}"/>
+      `);
+
+    // 1: diagonale lijnen — dunne evenwijdige schuine lijnen
+    case 1:
+      return wrap(`
+        <line x1="0" y1="48" x2="48" y2="0" stroke="${primaryColor}" stroke-width="0.8" opacity="${hi}"/>
+        <line x1="24" y1="48" x2="48" y2="24" stroke="${primaryColor}" stroke-width="0.8" opacity="${lo}"/>
+        <line x1="0" y1="24" x2="24" y2="0" stroke="${primaryColor}" stroke-width="0.8" opacity="${lo}"/>
+      `);
+
+    // 2: ruitenpatroon — overlappende diagonale lijnen in twee richtingen
+    case 2:
+      return wrap(`
+        <line x1="0" y1="48" x2="48" y2="0" stroke="${primaryColor}" stroke-width="0.6" opacity="${lo}"/>
+        <line x1="24" y1="48" x2="48" y2="24" stroke="${primaryColor}" stroke-width="0.6" opacity="${lo}"/>
+        <line x1="0" y1="24" x2="24" y2="0" stroke="${primaryColor}" stroke-width="0.6" opacity="${lo}"/>
+        <line x1="0" y1="0" x2="48" y2="48" stroke="${accentColor}" stroke-width="0.6" opacity="${lo}"/>
+        <line x1="0" y1="24" x2="24" y2="48" stroke="${accentColor}" stroke-width="0.6" opacity="${lo}"/>
+        <line x1="24" y1="0" x2="48" y2="24" stroke="${accentColor}" stroke-width="0.6" opacity="${lo}"/>
+      `);
+
+    // 3: cirkels — concentrische ringen als stempel
+    case 3:
+      return wrap(`
+        <circle cx="24" cy="24" r="18" fill="none" stroke="${primaryColor}" stroke-width="0.8" opacity="${lo}"/>
+        <circle cx="24" cy="24" r="10" fill="none" stroke="${primaryColor}" stroke-width="0.6" opacity="${hi}"/>
+        <circle cx="24" cy="24" r="3" fill="${accentColor}" opacity="${hi}"/>
+        <circle cx="0" cy="0" r="10" fill="none" stroke="${primaryColor}" stroke-width="0.6" opacity="${lo}"/>
+        <circle cx="48" cy="48" r="10" fill="none" stroke="${primaryColor}" stroke-width="0.6" opacity="${lo}"/>
+      `);
+
+    // 4: kleine kruisjes / plusjes
+    case 4:
+      return wrap(`
+        <line x1="4" y1="2" x2="4" y2="8" stroke="${primaryColor}" stroke-width="1" opacity="${hi}" stroke-linecap="round"/>
+        <line x1="1" y1="5" x2="7" y2="5" stroke="${primaryColor}" stroke-width="1" opacity="${hi}" stroke-linecap="round"/>
+        <line x1="28" y1="26" x2="28" y2="32" stroke="${primaryColor}" stroke-width="1" opacity="${hi}" stroke-linecap="round"/>
+        <line x1="25" y1="29" x2="31" y2="29" stroke="${primaryColor}" stroke-width="1" opacity="${hi}" stroke-linecap="round"/>
+        <line x1="16" y1="14" x2="16" y2="18" stroke="${accentColor}" stroke-width="0.8" opacity="${lo}" stroke-linecap="round"/>
+        <line x1="14" y1="16" x2="18" y2="16" stroke="${accentColor}" stroke-width="0.8" opacity="${lo}" stroke-linecap="round"/>
+        <line x1="40" y1="38" x2="40" y2="42" stroke="${accentColor}" stroke-width="0.8" opacity="${lo}" stroke-linecap="round"/>
+        <line x1="38" y1="40" x2="42" y2="40" stroke="${accentColor}" stroke-width="0.8" opacity="${lo}" stroke-linecap="round"/>
+      `);
+
+    // 5: driehoeken — kleine gestikte driehoekjes
+    default:
+      return wrap(`
+        <polygon points="24,4 44,42 4,42" fill="none" stroke="${primaryColor}" stroke-width="0.8" opacity="${lo}"/>
+        <polygon points="0,26 14,2 14,48" fill="none" stroke="${accentColor}" stroke-width="0.6" opacity="${lo}"/>
+        <polygon points="48,26 34,2 34,48" fill="none" stroke="${accentColor}" stroke-width="0.6" opacity="${lo}"/>
+      `);
+  }
 }

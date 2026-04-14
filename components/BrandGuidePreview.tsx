@@ -686,6 +686,28 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
             </div>
           </div>
         </div>
+        {/* Premium download callout */}
+        <div className="mt-4 rounded-xl p-4 border border-neutral-200 bg-neutral-50 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: primary + "15" }}>
+              <svg className="w-4 h-4" style={{ color: primary }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-neutral-800">Premium: alle logo-varianten downloaden</p>
+              <p className="text-[10px] text-neutral-400">Full color, zwart, wit, merkkleur — als SVG en PNG (512, 1024, 2048px)</p>
+            </div>
+          </div>
+          {!isPremium && (
+            <a href={`/upgrade?guideId=${guideId}`}
+              className="shrink-0 text-[10px] font-semibold px-3 py-1.5 rounded-lg text-white whitespace-nowrap"
+              style={{ backgroundColor: primary }}>
+              Ontgrendel →
+            </a>
+          )}
+        </div>
+
         {/* Logo color variants (from Recraft V4 SVG processing) */}
         {result.logoVariants && (
           <div className="mt-4">
@@ -1038,8 +1060,8 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
                 <CopyBlock label="Over ons" value={result.brandVoiceExamples.aboutUs} />
               </div>
               <div className="flex flex-col gap-3">
-                <div className="rounded-xl p-5 flex items-center justify-center flex-1" style={{ backgroundColor: accent }}>
-                  <p className="text-white font-bold text-base text-center">{result.brandVoiceExamples.callToAction}</p>
+                <div className="rounded-xl p-5 flex items-center justify-center flex-1" style={{ backgroundColor: primary }}>
+                  <p className="font-bold text-base text-center" style={{ color: isDark(primary) ? "#fff" : "#0a0a0a" }}>{result.brandVoiceExamples.callToAction}</p>
                 </div>
               </div>
             </div>

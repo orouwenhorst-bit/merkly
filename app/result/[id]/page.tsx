@@ -1,15 +1,23 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase";
+import { createClient, createServerClient } from "@/lib/supabase";
 import { BrandGuideResult } from "@/types/brand";
 import BrandGuidePreview from "@/components/BrandGuidePreview";
-import PremiumGenerator from "@/components/PremiumGenerator";
 import ShareButton from "@/components/ShareButton";
+import AuthButton from "@/components/AuthButton";
+import ClaimBanner from "@/components/ClaimBanner";
 import { notFound } from "next/navigation";
 
-export default async function ResultPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
+export default async function ResultPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const { id } = await params;
-  const sp = await searchParams;
+  await searchParams; // ongebruikt maar vereist door Next.js
 
+  // Guide ophalen via service client (publiek toegankelijk via URL)
   const supabase = createClient();
   const { data: guide, error } = await supabase
     .from("brand_guides")
@@ -19,8 +27,13 @@ export default async function ResultPage({ params, searchParams }: { params: Pro
 
   if (error || !guide) notFound();
 
+  // Huidige gebruiker controleren voor claim-banner
+  const serverClient = await createServerClient();
+  const { data: { user } } = await serverClient.auth.getUser();
+
   const result = guide.result as BrandGuideResult;
-  const needsPremiumGeneration = guide.is_premium && !result.imageryGuidelines && sp.paid === "1";
+  const isUnclaimed = !guide.user_id;
+  const showClaimBanner = !!user && isUnclaimed;
 
   const createdAt = new Date(guide.created_at).toLocaleDateString("nl-NL", {
     day: "numeric",
@@ -36,14 +49,20 @@ export default async function ResultPage({ params, searchParams }: { params: Pro
           <Link href="/" className="text-xl font-bold tracking-tight text-neutral-900">
             Merkly
           </Link>
-          <Link
-            href="/generate"
-            className="text-sm bg-neutral-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-neutral-800 transition-colors"
-          >
-            Nieuwe huisstijl
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/generate"
+              className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors hidden sm:block"
+            >
+              Nieuwe huisstijl
+            </Link>
+            <AuthButton />
+          </div>
         </div>
       </nav>
+
+      {/* Claim banner */}
+      {showClaimBanner && <ClaimBanner guideId={id} />}
 
       <div className="max-w-4xl mx-auto py-12 px-6">
         {/* Header */}
@@ -62,7 +81,6 @@ export default async function ResultPage({ params, searchParams }: { params: Pro
           <ShareButton />
         </div>
 
-        {needsPremiumGeneration && <PremiumGenerator guideId={id} />}
         <BrandGuidePreview result={result} isPremium={Boolean(guide.is_premium)} guideId={id} />
       </div>
     </main>

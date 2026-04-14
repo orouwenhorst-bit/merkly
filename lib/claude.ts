@@ -23,11 +23,18 @@ ${input.description ? `- Beschrijving: ${input.description}` : ""}
 ${input.values ? `- Kernwaarden: ${input.values}` : ""}
 ${input.preferredColor ? `- VOORKEURSKLEUR (verplicht als basis): ${input.preferredColor}` : ""}
 
-Genereer ALLEEN deze velden (niets meer). Schrijf alles in het Nederlands.
+Genereer ALLEEN deze velden (niets meer). Schrijf alles in het Nederlands. Vul ALLE velden volledig in — geen lege arrays of lege strings.
 
 KLEURENPALET: Exact 7 kleuren: 2 primair, 2 secundair, 3 neutraal.
 ${input.preferredColor ? `De EERSTE primaire kleur MOET exact ${input.preferredColor} zijn.` : ""}
 Geef per kleur: creatieve naam, HEX, en category.
+
+KLEURHARMONIE-REGELS (verplicht):
+- Secundaire kleuren moeten harmoniëren met de primaire — kies analoge tinten (±30° op kleurwiel), toon-op-toon variaties, of gedempte complementaire kleuren.
+- GEEN neon, fluorescerend of ongerelateerde kleuren als tweede of secundaire kleur.
+- Alle kleuren moeten samen voelen als één samenhangend palet — alsof ze door één ontwerper bedacht zijn.
+- Vermijd grote toonsprongen (bijv. roze + felblauw, groen + paars) tenzij de sfeer dit expliciet vraagt.
+- Geef neutrale kleuren die passen bij het kleurthema (geen losse grijzen die nergens bij aansluiten).
 
 TYPOGRAFIE: Kies 2 Google Fonts (display + body). VARIEER — geen Inter/Poppins/Montserrat/Roboto tenzij echt passend.
 
@@ -61,20 +68,20 @@ Retourneer ALLEEN geldige JSON:
   },
   "toneOfVoice": {
     "voiceAttributes": ["woord1", "woord2", "woord3", "woord4"],
-    "doList": [],
-    "dontList": [],
+    "doList": ["Concrete richtlijn 1", "Concrete richtlijn 2", "Concrete richtlijn 3", "Concrete richtlijn 4"],
+    "dontList": ["Verbod 1", "Verbod 2", "Verbod 3", "Verbod 4"],
     "tagline": "Max 6 woorden",
-    "boilerplate": "",
+    "boilerplate": "Standaard bedrijfsbeschrijving van 2 zinnen.",
     "examples": []
   },
   "brandVoiceExamples": {
-    "heroHeadline": "Max 8 woorden",
-    "subHeadline": "Max 15 woorden",
-    "instagramCaption": "",
-    "adCopy": "",
-    "emailSubjectLine": "",
-    "aboutUs": "",
-    "callToAction": "2-4 woorden"
+    "heroHeadline": "Krachtige websitekop max 8 woorden",
+    "subHeadline": "Ondersteunende ondertitel max 15 woorden",
+    "instagramCaption": "Echte Instagram-caption met emoji en 3 relevante hashtags",
+    "adCopy": "Twee zinnen advertentietekst die aanzet tot actie.",
+    "emailSubjectLine": "E-mailonderwerpregel max 50 tekens",
+    "aboutUs": "Over ons alinea van 2-3 zinnen in wij-vorm.",
+    "callToAction": "2-4 woorden CTA"
   },
   "imageryGuidelines": null,
   "iconographyGuidelines": null,
@@ -166,6 +173,14 @@ ${input.preferredColor ? `- De EERSTE primaire kleur MOET exact ${input.preferre
 - Geef per kleur: creatieve merknaam, HEX, RGB (als "rgb(R, G, B)"), CMYK (als "cmyk(C%, M%, Y%, K%)"), en de dichtstbijzijnde Pantone-code.
 - Geef de kleurverhouding-richtlijn (bijv. "60% neutraal, 30% primair, 10% secundair/accent").
 - Geef 4 toegankelijkheidscombinaties: test de primaire kleur als tekst op wit, wit op primair, donker neutraal op licht neutraal, en primair op licht neutraal. Bereken de contrastratio en beoordeel WCAG AA en AAA.
+
+KLEURHARMONIE-REGELS (strikt):
+- Secundaire kleuren MOETEN harmoniëren met de primaire — kies analoge tinten (±30° op kleurwiel), toon-op-toon variaties, of subtiel complementair.
+- VERBODEN: neon, fluorescente of tonaal ongerelateerde kleuren als secundaire kleur.
+- Het volledige palet moet voelen alsof het door één ontwerper is samengesteld — geen losse uitschieters.
+- Groot contrast tussen primaire en secundaire kleuren is alleen toegestaan als de sfeer (mood) dit expliciet vraagt (bijv. "gedurfd", "playful", "maximalistisch").
+- Als de primaire kleur warm is (rood/oranje/geel), kies secundaire kleuren ook in het warme spectrum of in neutrale aardtinten.
+- Als de primaire kleur koel is (blauw/groen/paars), kies secundaire kleuren ook koel of neutraal.
 
 TYPOGRAFIE:
 - Kies exact 2 typefaces (display + body), optioneel een 3e accent font.

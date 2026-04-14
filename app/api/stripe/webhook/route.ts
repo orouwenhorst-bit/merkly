@@ -24,26 +24,70 @@ export async function POST(req: NextRequest) {
 
   const supabase = createClient();
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const guideId = session.metadata?.guideId;
-    if (guideId && session.payment_status === "paid") {
-      // Mark as premium first
-      const { error } = await supabase
-        .from("brand_guides")
-        .update({ is_premium: true })
-        .eq("id", guideId);
-      if (error) console.error("Failed to mark guide premium:", error);
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      if (session.mode !== "subscription") break;
 
-      // Trigger full premium generation in the background
-      // (non-blocking — the user can already see their page)
-      const origin = req.nextUrl.origin;
-      fetch(`${origin}/api/generate-premium`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guideId }),
-      }).catch(err => console.error("Failed to trigger premium generation:", err));
+      const userId = session.metadata?.userId;
+      const subscriptionId = session.subscription as string | null;
+
+      if (userId && subscriptionId) {
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            stripe_subscription_id: subscriptionId,
+            subscription_status: "premium",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+
+        if (error) console.error("Failed to set premium status:", error);
+      }
+      break;
     }
+
+    case "customer.subscription.updated": {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId = subscription.customer as string;
+      const status = subscription.status === "active" ? "premium" : "free";
+      const periodEnd = new Date(
+        (subscription as unknown as { current_period_end: number }).current_period_end * 1000
+      ).toISOString();
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          subscription_status: status,
+          subscription_period_end: periodEnd,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("stripe_customer_id", customerId);
+
+      if (error) console.error("Failed to update subscription status:", error);
+      break;
+    }
+
+    case "customer.subscription.deleted": {
+      const subscription = event.data.object as Stripe.Subscription;
+      const customerId = subscription.customer as string;
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          subscription_status: "free",
+          stripe_subscription_id: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("stripe_customer_id", customerId);
+
+      if (error) console.error("Failed to cancel subscription:", error);
+      break;
+    }
+
+    default:
+      // Negeer andere events
+      break;
   }
 
   return NextResponse.json({ received: true });

@@ -1,6 +1,7 @@
 import Link from "next/link";
+import AuthButton from "@/components/AuthButton";
 
-export default function Home() {
+export default async function Home() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white overflow-x-hidden">
       {/* Nav */}
@@ -13,12 +14,7 @@ export default function Home() {
           <Link href="/generate" className="text-sm text-neutral-400 hover:text-white transition-colors">
             Probeer gratis
           </Link>
-          <Link
-            href="/generate"
-            className="text-sm bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-neutral-200 transition-colors"
-          >
-            Start nu
-          </Link>
+          <AuthButton />
         </div>
       </nav>
 
@@ -215,11 +211,18 @@ export default function Home() {
 
           {/* Brand guide header */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm font-bold">
-              V
+            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-sm shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://sbndejumjcbjrhvcfiim.supabase.co/storage/v1/object/public/logos/8018bc22-6e51-4ad9-a554-950de55aee63-primary.png"
+                alt="Bloesem logo"
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain"
+              />
             </div>
             <div>
-              <p className="font-semibold text-lg">Verde Studio</p>
+              <p className="font-semibold text-lg">Bloesem</p>
               <p className="text-xs text-neutral-500">Brand Guide &mdash; gegenereerd door Merkly</p>
             </div>
           </div>
@@ -230,11 +233,11 @@ export default function Home() {
               <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Kleurenpalet</p>
               <div className="flex gap-2">
                 {[
-                  { hex: "#0F766E", label: "Primair" },
-                  { hex: "#2DD4BF", label: "Secundair" },
-                  { hex: "#F59E0B", label: "Accent" },
-                  { hex: "#F8FAFC", label: "Licht" },
-                  { hex: "#1E293B", label: "Donker" },
+                  { hex: "#DB2777", label: "Bloesem" },
+                  { hex: "#F472B6", label: "Kers" },
+                  { hex: "#FB7185", label: "Koraal" },
+                  { hex: "#FBBF24", label: "Perzik" },
+                  { hex: "#57534E", label: "Schaduw" },
                 ].map(({ hex, label }) => (
                   <div key={hex} className="flex flex-col items-center gap-1.5">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg" style={{ backgroundColor: hex }} />
@@ -249,12 +252,12 @@ export default function Home() {
               <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Typografie</p>
               <div className="space-y-3">
                 <div>
-                  <p className="text-2xl font-bold tracking-tight">DM Serif Display</p>
-                  <p className="text-xs text-neutral-600">Koppen &mdash; serif, modern-klassiek</p>
+                  <p className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Georgia, serif" }}>Crimson Text</p>
+                  <p className="text-xs text-neutral-600">Koppen &mdash; elegant, warm</p>
                 </div>
                 <div>
-                  <p className="text-base text-neutral-300">Plus Jakarta Sans</p>
-                  <p className="text-xs text-neutral-600">Broodtekst &mdash; sans-serif, helder</p>
+                  <p className="text-base text-neutral-300">Source Sans Pro</p>
+                  <p className="text-xs text-neutral-600">Broodtekst &mdash; helder, leesbaar</p>
                 </div>
               </div>
             </div>
@@ -262,12 +265,13 @@ export default function Home() {
             {/* Tagline & personality */}
             <div>
               <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Merkpersoonlijkheid</p>
-              <p className="text-sm text-neutral-300 font-medium italic mb-3">&ldquo;Ontwerp met intentie&rdquo;</p>
+              <p className="text-sm text-neutral-300 font-medium italic mb-3">&ldquo;Bloemen die je verhaal vertellen&rdquo;</p>
               <div className="flex flex-wrap gap-2">
-                {["Helder", "Vakkundig", "Warm", "Eigentijds", "Betrouwbaar"].map((tag) => (
+                {["Hartelijk", "Authentiek", "Zorgzaam", "Creatief", "Betrouwbaar"].map((tag) => (
                   <span
                     key={tag}
-                    className="text-xs px-3 py-1 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20"
+                    className="text-xs px-3 py-1 rounded-full border"
+                    style={{ backgroundColor: "#DB277715", color: "#F472B6", borderColor: "#DB277730" }}
                   >
                     {tag}
                   </span>
@@ -279,9 +283,7 @@ export default function Home() {
             <div>
               <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Tone of voice</p>
               <p className="text-sm text-neutral-400 leading-relaxed italic">
-                &ldquo;Verde Studio gelooft dat goed ontwerp begint met luisteren.
-                Wij combineren Scandinavische eenvoud met ambachtelijke aandacht
-                voor detail en duurzame materialen.&rdquo;
+                &ldquo;Bloesem is jouw lokale bloemenspecialist voor handgemaakte boeketten en seizoensbloemen. Wij geloven dat elke bloem een verhaal heeft.&rdquo;
               </p>
             </div>
           </div>
@@ -290,10 +292,10 @@ export default function Home() {
           <div className="mt-8 pt-6 border-t border-neutral-800 flex items-center justify-between">
             <p className="text-xs text-neutral-600">Voorbeeld &mdash; je ontvangt ook logo, mockups en voorbeeldteksten</p>
             <Link
-              href="/generate"
+              href="/result/8018bc22-6e51-4ad9-a554-950de55aee63"
               className="text-xs text-violet-400 hover:text-violet-300 transition-colors font-medium"
             >
-              Maak jouw versie &rarr;
+              Bekijk volledige guide &rarr;
             </Link>
           </div>
         </div>
@@ -320,7 +322,7 @@ export default function Home() {
             },
             {
               title: "Betaalbaar",
-              desc: "Gratis te proberen. Premium voor &euro;14 eenmalig &mdash; een fractie van wat een bureau rekent.",
+              desc: "Gratis te proberen. Premium voor &euro;14/maand &mdash; een fractie van wat een bureau rekent.",
               gradient: "from-cyan-500 to-cyan-600",
             },
           ].map(({ title, desc, gradient }) => (
@@ -356,6 +358,7 @@ export default function Home() {
                 "Kleurenpalet & typografie",
                 "Merkverhaal & tone of voice",
                 "Merkpersoonlijkheid & strategie",
+                "3 generaties per dag",
                 "Online brand guide bekijken",
               ].map((f) => (
                 <li key={f} className="flex gap-2.5 items-start">
@@ -383,17 +386,17 @@ export default function Home() {
             </div>
             <p className="text-sm text-neutral-600 mb-1">Premium</p>
             <p className="text-4xl font-bold mb-1">
-              €14<span className="text-lg font-normal text-neutral-500"> eenmalig</span>
+              €14<span className="text-lg font-normal text-neutral-500">/maand</span>
             </p>
-            <p className="text-sm text-neutral-500 mb-6">Per brand guide · levenslang toegang</p>
+            <p className="text-sm text-neutral-500 mb-6">Maandelijks opzegbaar</p>
             <ul className="space-y-2.5 text-sm text-neutral-600 mb-8">
               {[
                 "Alles uit gratis",
+                "Onbeperkt genereren",
+                "Volledige brand guide direct",
                 "Download als PDF",
                 "AI-gegenereerd logo (SVG/PNG)",
                 "Mockups (visitekaartje, social media)",
-                "Voorbeeldteksten & brand voice",
-                "WCAG kleurcontrast-check",
               ].map((f) => (
                 <li key={f} className="flex gap-2.5 items-start">
                   <svg className="w-4 h-4 text-violet-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

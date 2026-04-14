@@ -70,6 +70,28 @@ function extractFillColors(svg: string): ParsedColor[] {
     }
   }
 
+  // Also match stop-color in gradients
+  const stopPattern = /stop-color="([^"]+)"/g;
+  while ((match = stopPattern.exec(svg)) !== null) {
+    const val = match[1];
+    if (val === "none" || val === "currentColor" || seen.has(val)) continue;
+    const parsed = parseColor(val);
+    if (parsed) {
+      seen.add(val);
+      colors.push(parsed);
+    }
+  }
+  const stopStylePattern = /stop-color:\s*([^;}"]+)/g;
+  while ((match = stopStylePattern.exec(svg)) !== null) {
+    const val = match[1].trim();
+    if (val === "none" || val === "currentColor" || seen.has(val)) continue;
+    const parsed = parseColor(val);
+    if (parsed) {
+      seen.add(val);
+      colors.push(parsed);
+    }
+  }
+
   return colors;
 }
 
@@ -113,21 +135,34 @@ function recolorSvg(svg: string, targetHex: string): string {
  * Recraft V4 outputs a full-viewport path as the first element:
  * <path d="M 0 0 L 2048 0 L 2048 2048 L 0 2048 L 0 0 z" fill="rgb(255,255,255)" transform="translate(0,0)"></path>
  *
- * Note: handles both self-closing (/>) and explicit close (></path>) tags,
- * and the transform attribute that Recraft includes.
+ * Also handles <rect> elements used as white backgrounds.
+ * Note: handles both self-closing (/>) and explicit close tags.
  */
 function removeWhiteBackground(svg: string): string {
   const isWhiteFill = (tag: string) =>
-    /fill="(?:rgb\(\s*255\s*,\s*255\s*,\s*255\s*\)|#[Ff]{6}|white)"/.test(tag);
+    /fill="(?:rgb\(\s*255\s*,\s*255\s*,\s*255\s*\)|#[Ff]{6}|#[Ff]{3}|white)"/.test(tag) ||
+    /fill:\s*(?:rgb\(\s*255\s*,\s*255\s*,\s*255\s*\)|#[Ff]{6}|#[Ff]{3}|white)/.test(tag);
 
   const isFullRectPath = (tag: string) =>
     /d="M\s*0\s+0\s+L\s+\d+\s+0\s+L\s+\d+\s+\d+\s+L\s+0\s+\d+/.test(tag);
 
+  // <rect> that covers the whole canvas: x=0 y=0 (or no x/y) with width/height matching canvas
+  const isFullCoverRect = (tag: string) =>
+    /^<rect\b/.test(tag) && !/x="[^0]/.test(tag) && !/y="[^0]/.test(tag);
+
   // Match both <path .../> and <path ...></path>
-  return svg.replace(/<path\b[^>]*(?:\/>|><\/path>)/g, (match) => {
+  let result = svg.replace(/<path\b[^>]*(?:\/>|>(?:<\/path>)?)/g, (match) => {
     if (isWhiteFill(match) && isFullRectPath(match)) return "";
     return match;
   });
+
+  // Also remove white <rect> background elements
+  result = result.replace(/<rect\b[^>]*(?:\/>|>(?:<\/rect>)?)/g, (match) => {
+    if (isWhiteFill(match) && isFullCoverRect(match)) return "";
+    return match;
+  });
+
+  return result;
 }
 
 /**

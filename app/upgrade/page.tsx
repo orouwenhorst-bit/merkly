@@ -1,30 +1,46 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+
+const FEATURES_FREE = [
+  "Kleurenpalet & typografie",
+  "Merkverhaal & tone of voice",
+  "Merkpersoonlijkheid & strategie",
+  "3 generaties per dag",
+  "Online brand guide bekijken",
+];
+
+const FEATURES_PREMIUM = [
+  "Alles uit gratis",
+  "Onbeperkt genereren",
+  "Volledige brand guide direct (geen wachten)",
+  "Download als PDF (11 pagina's)",
+  "AI-gegenereerd logo (SVG/PNG)",
+  "Mockups — visitekaartje, social media",
+  "Voorbeeldteksten & brand voice",
+  "WCAG kleurcontrast-check",
+  "Maandelijks opzegbaar",
+];
 
 function UpgradeInner() {
   const params = useSearchParams();
-  const guideId = params.get("guideId");
   const canceled = params.get("canceled") === "1";
   const [loading, setLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function startCheckout() {
-    if (!guideId) {
-      setError("Geen huisstijl geselecteerd. Genereer eerst je brand guide.");
-      return;
-    }
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guideId }),
-      });
+      const res = await fetch("/api/stripe/checkout", { method: "POST" });
       const data = await res.json();
+      if (res.status === 401) {
+        window.location.href = "/login?redirect=/upgrade";
+        return;
+      }
       if (!res.ok || !data.url) throw new Error(data.error || "Checkout mislukt");
       window.location.href = data.url;
     } catch (e) {
@@ -33,21 +49,18 @@ function UpgradeInner() {
     }
   }
 
-  // Auto-start when guideId present and not canceled
-  useEffect(() => {
-    if (guideId && !canceled) startCheckout();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const features = [
-    "Volledige brand guide als professionele PDF (11 pagina's)",
-    "Logo-varianten op wit, donker en in merkkleur",
-    "Kleurenpalet met HEX, RGB en CMYK waarden",
-    "Merktoepassingen: visitekaartje, social & e-mail",
-    "Brand voice copy en merkverhaal",
-    "Logo-richtlijnen (wel/niet doen)",
-    "Direct downloaden, levenslang toegang",
-  ];
+  async function openPortal() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Portal ophalen mislukt");
+      window.location.href = data.url;
+    } catch (e) {
+      setError(String(e instanceof Error ? e.message : e));
+      setPortalLoading(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
@@ -56,84 +69,108 @@ function UpgradeInner() {
           <span className="text-white">Merk</span>
           <span className="text-violet-400">ly</span>
         </Link>
-        {guideId && (
-          <Link
-            href={`/result/${guideId}`}
-            className="text-sm text-neutral-400 hover:text-white transition-colors"
-          >
-            ← Terug naar preview
-          </Link>
-        )}
+        <Link href="/dashboard" className="text-sm text-neutral-400 hover:text-white transition-colors">
+          ← Dashboard
+        </Link>
       </nav>
 
-      <section className="max-w-xl mx-auto px-6 py-20">
-        <div className="text-center mb-10">
+      <section className="max-w-4xl mx-auto px-6 py-20">
+        <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/30 rounded-full px-4 py-1.5 text-xs text-violet-300 mb-6">
-            Premium upgrade
+            ✦ Merkly Premium
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-            Unlock jouw complete brand guide
+            Onbeperkt huisstijlen maken
           </h1>
-          <p className="text-neutral-400 leading-relaxed">
-            Eenmalig <span className="text-white font-semibold">€14</span> — download
-            direct de volledige PDF en krijg levenslang toegang tot je huisstijl.
+          <p className="text-neutral-400 text-lg max-w-lg mx-auto">
+            Upgrade naar Premium en genereer direct volledige brand guides zonder limieten.
           </p>
         </div>
 
-        <div className="bg-neutral-900/60 border border-neutral-800 rounded-2xl p-8 mb-6">
-          <ul className="space-y-3 mb-8">
-            {features.map((f) => (
-              <li key={f} className="flex gap-3 items-start text-sm text-neutral-300">
-                <svg
-                  className="w-5 h-5 text-violet-400 mt-0.5 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-                {f}
-              </li>
-            ))}
-          </ul>
+        {canceled && (
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 mb-8 text-sm text-neutral-400 text-center">
+            Betaling geannuleerd. Je kunt het altijd opnieuw proberen.
+          </div>
+        )}
 
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-8 text-sm text-red-300 text-center">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Gratis */}
+          <div className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-8">
+            <p className="text-sm text-neutral-400 mb-1">Gratis</p>
+            <p className="text-4xl font-bold mb-1">€0</p>
+            <p className="text-sm text-neutral-600 mb-6">Voor altijd gratis</p>
+            <ul className="space-y-2.5 text-sm text-neutral-400 mb-8">
+              {FEATURES_FREE.map((f) => (
+                <li key={f} className="flex gap-2.5 items-start">
+                  <svg className="w-4 h-4 text-neutral-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/generate"
+              className="block text-center w-full py-3 border border-neutral-700 rounded-xl hover:border-neutral-500 transition-colors text-sm font-medium"
+            >
+              Gratis blijven
+            </Link>
+          </div>
+
+          {/* Premium */}
+          <div className="relative bg-white text-black rounded-2xl p-8">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-xs font-semibold px-4 py-1 rounded-full shadow-lg">
+                Aanbevolen
+              </span>
+            </div>
+            <p className="text-sm text-neutral-600 mb-1">Premium</p>
+            <p className="text-4xl font-bold mb-1">
+              €14<span className="text-lg font-normal text-neutral-500">/maand</span>
+            </p>
+            <p className="text-sm text-neutral-500 mb-6">Maandelijks opzegbaar</p>
+            <ul className="space-y-2.5 text-sm text-neutral-600 mb-8">
+              {FEATURES_PREMIUM.map((f) => (
+                <li key={f} className="flex gap-2.5 items-start">
+                  <svg className="w-4 h-4 text-violet-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <button
+              onClick={startCheckout}
+              disabled={loading}
+              className="w-full py-3 bg-black text-white rounded-xl hover:bg-neutral-900 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Doorverwijzen naar Stripe..." : "Upgrade voor €14/maand →"}
+            </button>
+
+            <p className="text-[11px] text-neutral-500 mt-3 text-center">
+              Beveiligde betaling via Stripe · iDEAL & creditcard
+            </p>
+          </div>
+        </div>
+
+        {/* Abonnement beheren voor bestaande premium users */}
+        <div className="mt-12 text-center">
+          <p className="text-sm text-neutral-600 mb-3">Al een Premium abonnement?</p>
           <button
-            onClick={startCheckout}
-            disabled={loading || !guideId}
-            className="w-full py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-xl text-base hover:from-violet-500 hover:to-fuchsia-500 transition-all shadow-lg shadow-violet-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={openPortal}
+            disabled={portalLoading}
+            className="text-sm text-neutral-400 hover:text-white underline underline-offset-4 transition-colors disabled:opacity-50"
           >
-            {loading ? "Bezig met doorverwijzen naar Stripe..." : "Upgrade voor €14 →"}
+            {portalLoading ? "Openen..." : "Beheer of zeg op via Stripe →"}
           </button>
-
-          {!guideId && (
-            <p className="text-xs text-amber-400 mt-3 text-center">
-              Genereer eerst een huisstijl om te kunnen upgraden.{" "}
-              <Link href="/generate" className="underline">Start hier</Link>.
-            </p>
-          )}
-
-          {canceled && (
-            <p className="text-xs text-neutral-500 mt-3 text-center">
-              Betaling geannuleerd. Je kunt het opnieuw proberen.
-            </p>
-          )}
-
-          {error && (
-            <p className="text-xs text-red-400 mt-3 text-center">{error}</p>
-          )}
-
-          <p className="text-[11px] text-neutral-600 mt-4 text-center">
-            Beveiligde betaling via Stripe · iDEAL & creditcard
-          </p>
         </div>
-
-        <p className="text-center text-xs text-neutral-600">
-          Vragen? Mail ons op{" "}
-          <a href="mailto:info@merkly.nl" className="text-neutral-400 hover:text-white">
-            info@merkly.nl
-          </a>
-        </p>
       </section>
     </main>
   );
