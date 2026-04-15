@@ -132,7 +132,7 @@ function UpgradeInner() {
             </div>
             <p className="text-sm text-neutral-600 mb-1">Premium</p>
             <p className="text-4xl font-bold mb-1">
-              €14<span className="text-lg font-normal text-neutral-500">/maand</span>
+              €18,95<span className="text-lg font-normal text-neutral-500">/maand</span>
             </p>
             <p className="text-sm text-neutral-500 mb-6">Maandelijks opzegbaar</p>
             <ul className="space-y-2.5 text-sm text-neutral-600 mb-8">
@@ -151,7 +151,7 @@ function UpgradeInner() {
               disabled={loading}
               className="w-full py-3 bg-black text-white rounded-xl hover:bg-neutral-900 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Doorverwijzen naar Stripe..." : "Upgrade voor €14/maand →"}
+              {loading ? "Doorverwijzen naar Stripe..." : "Upgrade voor €18,95/maand →"}
             </button>
 
             <p className="text-[11px] text-neutral-500 mt-3 text-center">

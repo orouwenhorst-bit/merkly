@@ -322,7 +322,7 @@ export default async function Home() {
             },
             {
               title: "Betaalbaar",
-              desc: "Gratis te proberen. Premium voor &euro;14/maand &mdash; een fractie van wat een bureau rekent.",
+              desc: "Gratis te proberen. Premium voor &euro;18,95/maand &mdash; een fractie van wat een bureau rekent.",
               gradient: "from-cyan-500 to-cyan-600",
             },
           ].map(({ title, desc, gradient }) => (
@@ -386,7 +386,7 @@ export default async function Home() {
             </div>
             <p className="text-sm text-neutral-600 mb-1">Premium</p>
             <p className="text-4xl font-bold mb-1">
-              €14<span className="text-lg font-normal text-neutral-500">/maand</span>
+              €18,95<span className="text-lg font-normal text-neutral-500">/maand</span>
             </p>
             <p className="text-sm text-neutral-500 mb-6">Maandelijks opzegbaar</p>
             <ul className="space-y-2.5 text-sm text-neutral-600 mb-8">

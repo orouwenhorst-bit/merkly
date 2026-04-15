@@ -542,7 +542,7 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
             {result.brandVoiceExamples?.subHeadline ?? ""}
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {result.brandPersonality.map((word) => (
+            {(result.brandPersonality ?? result.strategy?.personalityTraits ?? []).map((word) => (
               <span key={word} className="px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-white/80 border border-white/10">
                 {word}
               </span>
@@ -633,22 +633,28 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
                         </div>
                         <div>
                           <p className="font-bold text-sm text-neutral-900">{p.name}</p>
-                          <p className="text-xs text-neutral-400">{p.age} · {p.occupation}</p>
+                          <p className="text-xs text-neutral-400">{p.age} · {(p.occupation ?? (p as unknown as Record<string,string>).role ?? "")}</p>
                         </div>
                       </div>
-                      <p className="text-xs text-neutral-600 mb-3">{p.description}</p>
+                      <p className="text-xs text-neutral-600 mb-3">{p.description ?? (p as unknown as Record<string,string>).goals ?? ""}</p>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <p className="text-[10px] font-bold text-green-600 uppercase mb-1">Behoeften</p>
-                          {p.needs.map((n) => (
+                          {(p.needs ?? []).map((n) => (
                             <p key={n} className="text-[10px] text-neutral-500 flex gap-1"><span className="text-green-400">+</span>{n}</p>
                           ))}
+                          {!p.needs && (p as unknown as Record<string,string>).goals && (
+                            <p className="text-[10px] text-neutral-500">{(p as unknown as Record<string,string>).goals}</p>
+                          )}
                         </div>
                         <div>
                           <p className="text-[10px] font-bold text-red-500 uppercase mb-1">Frustraties</p>
-                          {p.frustrations.map((f) => (
+                          {(p.frustrations ?? []).map((f) => (
                             <p key={f} className="text-[10px] text-neutral-500 flex gap-1"><span className="text-red-300">-</span>{f}</p>
                           ))}
+                          {!p.frustrations && (p as unknown as Record<string,string>).painPoints && (
+                            <p className="text-[10px] text-neutral-500">{(p as unknown as Record<string,string>).painPoints}</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1228,7 +1234,7 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
                 href={`/upgrade?guideId=${guideId}`}
                 className="inline-block mt-2 py-3 px-8 bg-white rounded-xl font-semibold text-sm hover:bg-neutral-100 transition-colors"
                 style={{ color: primary }}>
-                Upgrade naar Premium — eenmalig &euro;14 &rarr;
+                Upgrade naar Premium — &euro;18,95/maand &rarr;
               </a>
             </div>
           </div>
