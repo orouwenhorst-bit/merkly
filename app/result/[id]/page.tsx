@@ -34,6 +34,7 @@ export default async function ResultPage({
   const result = guide.result as BrandGuideResult;
   const isUnclaimed = !guide.user_id;
   const showClaimBanner = !!user && isUnclaimed;
+  const showLoginPrompt = !user && isUnclaimed;
 
   const createdAt = new Date(guide.created_at).toLocaleDateString("nl-NL", {
     day: "numeric",
@@ -63,6 +64,26 @@ export default async function ResultPage({
 
       {/* Claim banner */}
       {showClaimBanner && <ClaimBanner guideId={id} />}
+
+      {/* Login prompt for anonymous users */}
+      {showLoginPrompt && (
+        <div className="bg-gradient-to-r from-violet-50 to-fuchsia-50 border-b border-violet-200 px-6 py-3">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4 flex-wrap">
+            <p className="text-sm text-violet-900">
+              <span className="font-medium">Wil je deze huisstijl bewaren?</span>{" "}
+              <span className="text-violet-700">
+                Log in om &apos;m aan je account toe te voegen.
+              </span>
+            </p>
+            <Link
+              href={`/login?redirect=${encodeURIComponent(`/result/${id}`)}`}
+              className="text-sm font-medium text-white bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 rounded-lg px-3 py-1.5 transition-all shrink-0"
+            >
+              Inloggen &amp; bewaren →
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto py-12 px-6">
         {/* Header */}
