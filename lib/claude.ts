@@ -37,6 +37,7 @@ KLEURHARMONIE-REGELS (verplicht):
 - Geef neutrale kleuren die passen bij het kleurthema (geen losse grijzen die nergens bij aansluiten).
 
 TYPOGRAFIE: Kies 2 Google Fonts (display + body). VARIEER — geen Inter/Poppins/Montserrat/Roboto tenzij echt passend.
+Vul de typeScale volledig in op basis van de gekozen fonts: H1 (display, 700, 48px), H2 (display, 600, 32px), H3 (display, 600, 24px), body (body, 400, 16px), small (body, 400, 14px).
 
 Retourneer ALLEEN geldige JSON:
 
@@ -62,7 +63,13 @@ Retourneer ALLEEN geldige JSON:
     "fonts": [
       { "name": "FontNaam", "category": "display", "weights": [400, 700], "source": "Google Fonts", "googleFontsUrl": "https://fonts.googleapis.com/css2?family=FontNaam:wght@400;700&display=swap", "fallback": "serif", "usage": "Koppen" }
     ],
-    "typeScale": [],
+    "typeScale": [
+      { "level": "H1", "fontFamily": "DisplayFontNaam", "weight": 700, "sizePx": 48, "lineHeight": "1.1", "letterSpacing": "-1px", "usage": "Paginatitels" },
+      { "level": "H2", "fontFamily": "DisplayFontNaam", "weight": 600, "sizePx": 32, "lineHeight": "1.2", "letterSpacing": "-0.5px", "usage": "Sectiekoppen" },
+      { "level": "H3", "fontFamily": "DisplayFontNaam", "weight": 600, "sizePx": 24, "lineHeight": "1.3", "letterSpacing": "0px", "usage": "Subkoppen" },
+      { "level": "body", "fontFamily": "BodyFontNaam", "weight": 400, "sizePx": 16, "lineHeight": "1.6", "letterSpacing": "0px", "usage": "Lopende tekst" },
+      { "level": "small", "fontFamily": "BodyFontNaam", "weight": 400, "sizePx": 14, "lineHeight": "1.5", "letterSpacing": "0px", "usage": "Bijschriften en metadata" }
+    ],
     "pairingRationale": "",
     "googleFontsUrl": ""
   },

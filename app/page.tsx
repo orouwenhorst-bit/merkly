@@ -1,6 +1,8 @@
 import Link from "next/link";
 import AuthButton from "@/components/AuthButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white overflow-x-hidden">

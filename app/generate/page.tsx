@@ -68,8 +68,9 @@ function ProgressOverlay({ companyName }: { companyName: string }) {
     };
   }, [currentStep]);
 
-  const totalProgress = Math.round(
-    ((currentStep + stepProgress / 100) / GENERATION_STEPS.length) * 100
+  const totalProgress = Math.min(
+    Math.round(((currentStep + stepProgress / 100) / GENERATION_STEPS.length) * 100),
+    95
   );
 
   return (

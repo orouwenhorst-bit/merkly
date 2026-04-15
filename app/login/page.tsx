@@ -19,13 +19,20 @@ function LoginInner() {
   const supabase = createBrowserClient();
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
+  function storeNextDestination() {
+    if (typeof document !== "undefined" && redirectTo !== "/dashboard") {
+      document.cookie = `auth_redirect=${encodeURIComponent(redirectTo)}; path=/; max-age=300; SameSite=Lax`;
+    }
+  }
+
   async function handleGoogle() {
     setGoogleLoading(true);
     setFormError(null);
+    storeNextDestination();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        redirectTo: `${origin}/auth/callback`,
       },
     });
     if (error) {
@@ -39,14 +46,20 @@ function LoginInner() {
     if (!email) return;
     setEmailLoading(true);
     setFormError(null);
+    storeNextDestination();
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        emailRedirectTo: `${origin}/auth/callback`,
       },
     });
     if (error) {
-      setFormError("Verzenden mislukt. Controleer je e-mailadres en probeer opnieuw.");
+      console.error("[magic link] signInWithOtp error:", error.message, error);
+      setFormError(
+        error.message?.includes("rate limit") || error.status === 429
+          ? "Te veel pogingen. Wacht even en probeer het opnieuw."
+          : "Verzenden mislukt. Controleer je e-mailadres en probeer opnieuw."
+      );
       setEmailLoading(false);
     } else {
       setEmailSent(true);
