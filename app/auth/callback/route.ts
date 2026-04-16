@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -30,9 +31,21 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // Stuur welkomstmail alleen bij nieuw account (created_at ≈ now)
+      const user = sessionData?.user;
+      if (user?.email) {
+        const createdAt = new Date(user.created_at).getTime();
+        const isNew = Date.now() - createdAt < 60_000;
+        if (isNew) {
+          sendWelcomeEmail(user.email, user.user_metadata?.full_name).catch(
+            (e) => console.error("[welcome email]", e)
+          );
+        }
+      }
+
       const response = NextResponse.redirect(`${origin}${next}`);
       // Forward all session cookies onto the redirect response
       for (const { name, value, options } of cookiesToSet) {

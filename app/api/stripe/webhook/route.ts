@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase";
+import { sendPremiumEmail } from "@/lib/email";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +43,18 @@ export async function POST(req: NextRequest) {
           })
           .eq("user_id", userId);
 
-        if (error) console.error("Failed to set premium status:", error);
+        if (error) {
+          console.error("Failed to set premium status:", error);
+        } else {
+          // Stuur premium activatie mail
+          const email = session.customer_details?.email;
+          const name = session.customer_details?.name ?? undefined;
+          if (email) {
+            sendPremiumEmail(email, name).catch(
+              (e) => console.error("[premium email]", e)
+            );
+          }
+        }
       }
       break;
     }

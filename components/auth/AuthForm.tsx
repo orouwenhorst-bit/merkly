@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { createBrowserClient } from "@/lib/supabase";
 
@@ -11,51 +11,19 @@ interface AuthFormProps {
   mode: AuthMode;
 }
 
-const COPY = {
-  login: {
-    heading: "Inloggen bij Merkly",
-    subtitle: "Welkom terug. Log in om je huisstijlen te beheren.",
-    emailLabel: "Log in met je e-mailadres",
-    submitButton: "Stuur inloglink",
-    submitButtonLoading: "Bezig met verzenden...",
-    googleButton: "Inloggen met Google",
-    emailSentTitle: "Controleer je inbox",
-    emailSentDescription: (email: string) =>
-      `We hebben een inloglink gestuurd naar ${email}. Klik op de link om in te loggen.`,
-    switchPrompt: "Nog geen account?",
-    switchCta: "Gratis aanmelden",
-    switchHref: "/signup",
-    fineprint: null as string | null,
-  },
-  signup: {
-    heading: "Account aanmaken",
-    subtitle: "Maak gratis een Merkly-account. Daarna kun je premium activeren voor volledige brand guides.",
-    emailLabel: "Meld je aan met je e-mailadres",
-    submitButton: "Account aanmaken",
-    submitButtonLoading: "Account aanmaken...",
-    googleButton: "Aanmelden met Google",
-    emailSentTitle: "Bevestig je e-mailadres",
-    emailSentDescription: (email: string) =>
-      `We hebben een bevestigingslink gestuurd naar ${email}. Klik op de link om je account te activeren.`,
-    switchPrompt: "Heb je al een account?",
-    switchCta: "Inloggen",
-    switchHref: "/login",
-    fineprint: "Door aan te melden ga je akkoord met onze voorwaarden en privacybeleid.",
-  },
-} as const;
-
 export default function AuthForm({ mode }: AuthFormProps) {
   const params = useSearchParams();
+  const router = useRouter();
   const redirectTo = params.get("redirect") ?? "/dashboard";
   const urlError = params.get("error");
 
-  const copy = COPY[mode];
-
   const [email, setEmail] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
-  const [emailLoading, setEmailLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [signupDone, setSignupDone] = useState(false);
 
   const supabase = createBrowserClient();
   const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -72,9 +40,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
     storeNextDestination();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: `${origin}/auth/callback`,
-      },
+      options: { redirectTo: `${origin}/auth/callback` },
     });
     if (error) {
       setFormError(
@@ -86,48 +52,63 @@ export default function AuthForm({ mode }: AuthFormProps) {
     }
   }
 
-  async function handleEmailSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return;
-    setEmailLoading(true);
     setFormError(null);
+
+    if (!email || !password) return;
+
+    if (mode === "signup") {
+      if (password.length < 8) {
+        setFormError("Je wachtwoord moet minimaal 8 tekens lang zijn.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setFormError("De wachtwoorden komen niet overeen.");
+        return;
+      }
+    }
+
+    setLoading(true);
     storeNextDestination();
 
-    // Bij "login" → alleen bestaande users mogen inloggen
-    // Bij "signup" → nieuwe users aanmaken is toegestaan
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${origin}/auth/callback`,
-        shouldCreateUser: mode === "signup",
-      },
-    });
-
-    if (error) {
-      console.error(`[${mode}] signInWithOtp error:`, error.message, error);
-      const isRateLimit =
-        error.message?.toLowerCase().includes("rate limit") || error.status === 429;
-      const isSignupDisabled =
-        error.message?.toLowerCase().includes("signups not allowed") ||
-        error.message?.toLowerCase().includes("user not found");
-
-      if (isRateLimit) {
-        setFormError("Te veel pogingen. Wacht even en probeer het opnieuw.");
-      } else if (mode === "login" && isSignupDisabled) {
+    if (mode === "login") {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        const isInvalid =
+          error.message?.toLowerCase().includes("invalid login") ||
+          error.message?.toLowerCase().includes("invalid credentials") ||
+          error.message?.toLowerCase().includes("email not confirmed");
         setFormError(
-          "Dit e-mailadres heeft nog geen Merkly-account. Meld je eerst gratis aan."
+          isInvalid
+            ? "E-mailadres of wachtwoord klopt niet. Probeer het opnieuw."
+            : "Inloggen mislukt. Probeer het opnieuw."
         );
+        setLoading(false);
       } else {
-        setFormError(
-          mode === "login"
-            ? "Verzenden mislukt. Controleer je e-mailadres en probeer opnieuw."
-            : "Aanmelden mislukt. Controleer je e-mailadres en probeer opnieuw."
-        );
+        router.push(redirectTo);
+        router.refresh();
       }
-      setEmailLoading(false);
     } else {
-      setEmailSent(true);
-      setEmailLoading(false);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${origin}/auth/callback` },
+      });
+      if (error) {
+        const alreadyExists =
+          error.message?.toLowerCase().includes("already registered") ||
+          error.message?.toLowerCase().includes("user already exists");
+        setFormError(
+          alreadyExists
+            ? "Dit e-mailadres is al geregistreerd. Ga naar inloggen."
+            : "Aanmelden mislukt. Controleer je gegevens en probeer opnieuw."
+        );
+        setLoading(false);
+      } else {
+        setSignupDone(true);
+        setLoading(false);
+      }
     }
   }
 
@@ -149,8 +130,14 @@ export default function AuthForm({ mode }: AuthFormProps) {
         <div className="absolute top-32 left-1/2 -translate-x-1/2 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative text-center mb-10">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">{copy.heading}</h1>
-          <p className="text-neutral-400 text-sm">{copy.subtitle}</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
+            {mode === "login" ? "Inloggen bij Merkly" : "Account aanmaken"}
+          </h1>
+          <p className="text-neutral-400 text-sm">
+            {mode === "login"
+              ? "Welkom terug. Log in om je huisstijlen te beheren."
+              : "Maak gratis een Merkly-account. Daarna kun je premium activeren voor volledige brand guides."}
+          </p>
         </div>
 
         {(hasUrlError || dbError || formError) && (
@@ -166,7 +153,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           {/* Google */}
           <button
             onClick={handleGoogle}
-            disabled={googleLoading || emailLoading}
+            disabled={googleLoading || loading}
             className="w-full flex items-center justify-center gap-3 bg-white text-neutral-900 font-semibold py-3.5 px-6 rounded-xl hover:bg-neutral-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {googleLoading ? (
@@ -179,7 +166,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
             )}
-            {copy.googleButton}
+            {mode === "login" ? "Inloggen met Google" : "Aanmelden met Google"}
           </button>
 
           {/* Divider */}
@@ -189,19 +176,19 @@ export default function AuthForm({ mode }: AuthFormProps) {
             <div className="flex-1 h-px bg-neutral-800" />
           </div>
 
-          {/* Email magic link */}
-          {emailSent ? (
+          {/* Signup success */}
+          {signupDone ? (
             <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-5 py-4 text-center">
-              <p className="text-emerald-300 font-medium mb-1">{copy.emailSentTitle}</p>
+              <p className="text-emerald-300 font-medium mb-1">Bevestig je e-mailadres</p>
               <p className="text-sm text-neutral-400">
-                {copy.emailSentDescription(email)}
+                We hebben een bevestigingslink gestuurd naar <span className="text-white">{email}</span>. Klik op de link om je account te activeren.
               </p>
             </div>
           ) : (
-            <form onSubmit={handleEmailSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label htmlFor="email" className="block text-sm text-neutral-400 mb-1.5">
-                  {copy.emailLabel}
+                  E-mailadres
                 </label>
                 <input
                   id="email"
@@ -210,32 +197,83 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="jouw@emailadres.nl"
+                  autoComplete="email"
                   className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-violet-500 transition-colors"
                 />
               </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm text-neutral-400 mb-1.5">
+                  Wachtwoord
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={mode === "signup" ? "Minimaal 8 tekens" : "Je wachtwoord"}
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-violet-500 transition-colors"
+                />
+              </div>
+
+              {mode === "signup" && (
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm text-neutral-400 mb-1.5">
+                    Wachtwoord bevestigen
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Herhaal je wachtwoord"
+                    autoComplete="new-password"
+                    className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-violet-500 transition-colors"
+                  />
+                </div>
+              )}
+
+              {mode === "login" && (
+                <div className="text-right">
+                  <Link
+                    href="/wachtwoord-vergeten"
+                    className="text-xs text-neutral-500 hover:text-violet-400 transition-colors"
+                  >
+                    Wachtwoord vergeten?
+                  </Link>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={emailLoading || googleLoading || !email}
+                disabled={loading || googleLoading || !email || !password}
                 className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold rounded-xl hover:from-violet-500 hover:to-fuchsia-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {emailLoading ? copy.submitButtonLoading : copy.submitButton}
+                {loading
+                  ? mode === "login" ? "Bezig met inloggen..." : "Account aanmaken..."
+                  : mode === "login" ? "Inloggen" : "Account aanmaken"}
               </button>
             </form>
           )}
 
           {/* Switch link */}
           <p className="text-center text-sm text-neutral-500 pt-4">
-            {copy.switchPrompt}{" "}
+            {mode === "login" ? "Nog geen account?" : "Heb je al een account?"}{" "}
             <Link
-              href={copy.switchHref}
+              href={mode === "login" ? "/signup" : "/login"}
               className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
             >
-              {copy.switchCta}
+              {mode === "login" ? "Gratis aanmelden" : "Inloggen"}
             </Link>
           </p>
 
-          {copy.fineprint && (
-            <p className="text-center text-xs text-neutral-600">{copy.fineprint}</p>
+          {mode === "signup" && (
+            <p className="text-center text-xs text-neutral-600">
+              Door aan te melden ga je akkoord met onze voorwaarden en privacybeleid.
+            </p>
           )}
         </div>
       </section>

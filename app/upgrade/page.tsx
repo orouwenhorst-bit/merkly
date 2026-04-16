@@ -41,7 +41,7 @@ function UpgradeInner() {
         window.location.href = "/login?redirect=/upgrade";
         return;
       }
-      if (!res.ok || !data.url) throw new Error(data.error || "Checkout mislukt");
+      if (!res.ok || !data.url) throw new Error(data.detail || data.error || "Checkout mislukt");
       window.location.href = data.url;
     } catch (e) {
       setError(String(e instanceof Error ? e.message : e));
