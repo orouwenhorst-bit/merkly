@@ -43,6 +43,11 @@ export async function GET(request: NextRequest) {
     }
 
     console.error("[auth/callback] exchangeCodeForSession failed:", error.message);
+
+    // "Database error saving new user" → wijzer naar signup met specifieke hint
+    if (error.message?.toLowerCase().includes("database error")) {
+      return NextResponse.redirect(`${origin}/signup?error=db_error`);
+    }
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth_failed`);

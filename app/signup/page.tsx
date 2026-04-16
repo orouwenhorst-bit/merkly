@@ -2,14 +2,14 @@ import { Suspense } from "react";
 import AuthForm from "@/components/auth/AuthForm";
 
 export const metadata = {
-  title: "Inloggen — Merkly",
-  description: "Log in bij Merkly om je huisstijlen te beheren en premium te activeren.",
+  title: "Account aanmaken — Merkly",
+  description: "Maak gratis een Merkly-account en start direct met het genereren van je huisstijl.",
 };
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-neutral-950" />}>
-      <AuthForm mode="login" />
+      <AuthForm mode="signup" />
     </Suspense>
   );
 }
