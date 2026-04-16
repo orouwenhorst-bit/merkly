@@ -108,8 +108,7 @@ function ProgressOverlay({ companyName, done }: { companyName: string; done: boo
           <div className="h-1.5 bg-neutral-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all ease-out"
-            style={{ transitionDuration: done ? "600ms" : "500ms" }}
-              style={{ width: `${totalProgress}%` }}
+              style={{ width: `${totalProgress}%`, transitionDuration: done ? "600ms" : "500ms" }}
             />
           </div>
           <p className="text-xs text-neutral-600">{totalProgress}%</p>
