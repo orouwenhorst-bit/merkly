@@ -179,7 +179,7 @@ export default function GuideCard({
                   className="fixed inset-0 z-10"
                   onClick={() => setMenuOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-1 z-20 w-52 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
+                <div className="absolute right-0 bottom-full mb-1 z-20 w-52 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden">
                   <Link
                     href={`/result/${guide.id}`}
                     className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-neutral-200 hover:bg-neutral-800 transition-colors"
