@@ -39,9 +39,10 @@ const GENERATION_STEPS = [
   { label: "Brand guide afronden", duration: 3000 },
 ];
 
-function ProgressOverlay({ companyName }: { companyName: string }) {
+function ProgressOverlay({ companyName, done }: { companyName: string; done: boolean }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [stepProgress, setStepProgress] = useState(0);
+  const [displayProgress, setDisplayProgress] = useState(0);
 
   useEffect(() => {
     let stepTimer: ReturnType<typeof setTimeout>;
@@ -68,10 +69,16 @@ function ProgressOverlay({ companyName }: { companyName: string }) {
     };
   }, [currentStep]);
 
-  const totalProgress = Math.min(
+  const calculatedProgress = Math.min(
     Math.round(((currentStep + stepProgress / 100) / GENERATION_STEPS.length) * 100),
-    95
+    90
   );
+
+  useEffect(() => {
+    setDisplayProgress(done ? 100 : calculatedProgress);
+  }, [done, calculatedProgress]);
+
+  const totalProgress = displayProgress;
 
   return (
     <div className="fixed inset-0 bg-neutral-950 z-50 flex items-center justify-center p-6">
@@ -100,7 +107,8 @@ function ProgressOverlay({ companyName }: { companyName: string }) {
         <div className="space-y-3">
           <div className="h-1.5 bg-neutral-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all duration-500 ease-out"
+              className="h-full bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full transition-all ease-out"
+            style={{ transitionDuration: done ? "600ms" : "500ms" }}
               style={{ width: `${totalProgress}%` }}
             />
           </div>
@@ -151,6 +159,7 @@ function ProgressOverlay({ companyName }: { companyName: string }) {
 export default function GeneratePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     companyName: "",
@@ -178,6 +187,8 @@ export default function GeneratePage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
+        setDone(true);
+        await new Promise((r) => setTimeout(r, 700));
         router.push(`/result/${data.id}`);
       } catch (err) {
         console.error("Generate error:", err);
@@ -192,7 +203,7 @@ export default function GeneratePage() {
 
   return (
     <>
-      {loading && <ProgressOverlay companyName={form.companyName} />}
+      {loading && <ProgressOverlay companyName={form.companyName} done={done} />}
 
       <main className="min-h-screen bg-neutral-950 text-white overflow-x-hidden">
         {/* Nav */}

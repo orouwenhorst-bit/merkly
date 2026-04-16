@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import GuideCard from "@/components/dashboard/GuideCard";
 import { toGuideCardData } from "@/lib/guide-card";
+import PortalButton from "@/components/PortalButton";
 
 export const dynamic = "force-dynamic";
 
@@ -135,14 +136,9 @@ export default async function DashboardPage({
                 </p>
               )}
             </div>
-            <form action="/api/stripe/portal" method="POST">
-              <button
-                type="submit"
-                className="text-xs font-medium text-neutral-300 bg-neutral-900/60 border border-neutral-700 hover:border-neutral-600 hover:text-white rounded-lg px-3 py-1.5 transition-colors"
-              >
-                Abonnement beheren →
-              </button>
-            </form>
+            <PortalButton className="text-xs font-medium text-neutral-300 bg-neutral-900/60 border border-neutral-700 hover:border-neutral-600 hover:text-white rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50">
+              Abonnement beheren →
+            </PortalButton>
           </div>
         </div>
       ) : (

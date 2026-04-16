@@ -3,6 +3,7 @@ import { createServerClient, createServiceClient } from "@/lib/supabase";
 import { getUserSubscription } from "@/lib/subscription";
 import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import PortalButton from "@/components/PortalButton";
 
 export const dynamic = "force-dynamic";
 
@@ -119,17 +120,12 @@ export default async function AccountPage() {
                     </>
                   )}
                 </p>
-                <form action="/api/stripe/portal" method="POST">
-                  <button
-                    type="submit"
-                    className="inline-flex items-center gap-2 text-sm font-medium bg-white text-neutral-900 hover:bg-neutral-200 px-4 py-2 rounded-xl transition-colors"
-                  >
-                    Abonnement beheren
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </button>
-                </form>
+                <PortalButton className="inline-flex items-center gap-2 text-sm font-medium bg-white text-neutral-900 hover:bg-neutral-200 px-4 py-2 rounded-xl transition-colors disabled:opacity-50">
+                  Abonnement beheren
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </PortalButton>
                 <p className="text-xs text-neutral-600 mt-3">
                   Beheer betaalmethodes, facturen en opzeggen via het Stripe portaal.
                 </p>

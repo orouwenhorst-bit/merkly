@@ -27,6 +27,7 @@ export default function GuideCard({
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [makingPremium, setMakingPremium] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const dateLabel = new Date(guide.createdAt).toLocaleDateString("nl-NL", {
@@ -74,6 +75,19 @@ export default function GuideCard({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     setMenuOpen(false);
+  }
+
+  async function handleMakePremium() {
+    setMakingPremium(true);
+    setMenuOpen(false);
+    try {
+      const res = await fetch(`/api/guides/${guide.id}/make-premium`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      router.push(`/result/${guide.id}`);
+    } catch {
+      alert("Er ging iets mis. Probeer het opnieuw.");
+      setMakingPremium(false);
+    }
   }
 
   async function handleDelete() {
@@ -200,6 +214,19 @@ export default function GuideCard({
                     </svg>
                     {copied ? "Link gekopieerd!" : "Kopieer deel-link"}
                   </button>
+
+                  {viewerIsPremium && !guide.isPremium && (
+                    <button
+                      onClick={handleMakePremium}
+                      disabled={makingPremium}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-violet-300 hover:bg-violet-500/10 transition-colors disabled:opacity-50"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+                      </svg>
+                      {makingPremium ? "Bezig..." : "Maak Premium ✦"}
+                    </button>
+                  )}
 
                   <div className="border-t border-neutral-800" />
 
