@@ -1,6 +1,6 @@
 "use client";
 import { BrandGuideResult } from "@/types/brand";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Props {
   result: BrandGuideResult;
@@ -486,6 +486,7 @@ function PremiumTeaser({ guideId, primary, label }: { guideId: string; primary: 
 
 export default function BrandGuidePreview({ result, isPremium, guideId }: Props) {
   const [downloading, setDownloading] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
   const colors = getColors(result);
   const { primary: primaryColors, secondary: secondaryColors, neutral: neutralColors } = getColorsByCategory(result);
   const primary = primaryColors[0]?.hex ?? colors[0]?.hex ?? "#000";
@@ -493,6 +494,23 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
   const displayFont = getDisplayFont(result);
   const bodyFont = getBodyFont(result);
   const fontsUrl = getGoogleFontsUrl(result);
+
+  // Load Google Fonts via <link> injection so specimens render correctly
+  useEffect(() => {
+    if (!fontsUrl) return;
+    const id = "brand-guide-fonts";
+    if (document.getElementById(id)) { setFontsLoaded(true); return; }
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = fontsUrl;
+    link.onload = () => setFontsLoaded(true);
+    document.head.appendChild(link);
+    return () => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    };
+  }, [fontsUrl]);
 
   async function handleDownloadPDF() {
     if (!isPremium) { window.location.href = `/upgrade?guideId=${guideId}`; return; }
@@ -514,9 +532,7 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
   }
 
   return (
-    <div className="space-y-16">
-      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-      {fontsUrl && <link rel="stylesheet" href={fontsUrl} />}
+    <div className={`space-y-16 ${fontsLoaded ? "fonts-loaded" : ""}`}>
 
       {/* ── HERO BANNER ── */}
       <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: primary }}>
@@ -916,12 +932,18 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
 
         {/* Font specimens */}
         <div className="grid grid-cols-2 gap-4 mb-6">
+          {/* Display font */}
           <div className="bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
             <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Display — {displayFont}</p>
             <div style={{ fontFamily: `'${displayFont}', serif` }}>
               <p className="text-5xl font-bold text-neutral-900 leading-none">Aa</p>
               <p className="text-xl font-bold text-neutral-800 mt-3">{result.companyName}</p>
               <p className="text-sm text-neutral-400 mt-1">{result.tagline}</p>
+              <p className="text-[11px] text-neutral-500 mt-3 pt-3 border-t border-neutral-100 leading-relaxed" style={{ fontFamily: `'${displayFont}', serif` }}>
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
+                abcdefghijklmnopqrstuvwxyz<br />
+                0123456789 !@#&
+              </p>
             </div>
             {getFonts(result).find(f => f.category === "display") && (
               <div className="text-[10px] text-neutral-400 border-t border-neutral-100 pt-3 space-y-0.5">
@@ -931,14 +953,16 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
               </div>
             )}
           </div>
+          {/* Body font */}
           <div className="bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
             <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Body — {bodyFont}</p>
             <div style={{ fontFamily: `'${bodyFont}', sans-serif` }}>
-              <p className="text-sm leading-relaxed text-neutral-700">{result.brandStory}</p>
-              <p className="text-[10px] text-neutral-400 mt-3 tracking-wide font-mono">
+              <p className="text-2xl font-bold text-neutral-900 leading-none">Aa</p>
+              <p className="text-sm leading-relaxed text-neutral-700 mt-3 line-clamp-3">{result.brandStory ?? result.strategy?.brandStory}</p>
+              <p className="text-[11px] text-neutral-500 mt-3 pt-3 border-t border-neutral-100 leading-relaxed" style={{ fontFamily: `'${bodyFont}', sans-serif` }}>
                 ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
                 abcdefghijklmnopqrstuvwxyz<br />
-                0123456789 !@#$%&
+                0123456789 !@#&
               </p>
             </div>
             {getFonts(result).find(f => f.category === "body") && (
