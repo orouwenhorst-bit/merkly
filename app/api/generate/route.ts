@@ -95,16 +95,20 @@ export async function POST(req: NextRequest) {
       );
 
       if (v4Result) {
-        const publicUrl = await storeLogoSvg(savedGuide.id, v4Result.svg);
         const variants = deriveLogoVariants(v4Result.svg, primaryColor);
+        // Always use the brand-colored variant as the primary display logo.
+        // monoPrimary recolors all non-white fills to the exact primaryColor,
+        // ensuring the logo matches the chosen/derived brand color.
+        const primarySvg = variants.monoPrimary;
+        const publicUrl = await storeLogoSvg(savedGuide.id, primarySvg);
         result.logoImageUrl = publicUrl ?? undefined;
         result.iconSvg = undefined;
         result.logoVariants = {
-          fullColor: variants.fullColor,
+          fullColor: primarySvg,
           monoBlack: variants.monoBlack,
           monoWhite: variants.monoWhite,
           monoPrimary: variants.monoPrimary,
-          transparent: variants.transparent,
+          transparent: primarySvg,
           recraftImageId: v4Result.imageId,
         };
         await supabase.from("brand_guides").update({ result }).eq("id", savedGuide.id);
