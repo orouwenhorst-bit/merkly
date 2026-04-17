@@ -228,7 +228,7 @@ export default function GuideCard({
     <div className="group relative bg-neutral-900/50 border border-neutral-800 hover:border-neutral-700 rounded-2xl overflow-hidden transition-all hover:shadow-xl hover:shadow-violet-500/5 flex flex-col">
       {/* Preview header */}
       <Link
-        href={`/result/${guide.id}`}
+        href={`/dashboard/huisstijl/${guide.id}`}
         className="relative block h-32 overflow-hidden"
         style={{
           background: swatches.length >= 2
@@ -264,7 +264,7 @@ export default function GuideCard({
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-2">
-          <Link href={`/result/${guide.id}`} className="min-w-0 flex-1">
+          <Link href={`/dashboard/huisstijl/${guide.id}`} className="min-w-0 flex-1">
             <p className="font-semibold text-white group-hover:text-violet-200 transition-colors truncate">
               {guide.companyName}
             </p>
@@ -313,7 +313,7 @@ export default function GuideCard({
         <div className="mt-auto flex items-center justify-between pt-2 border-t border-neutral-800/80">
           <p className="text-[11px] text-neutral-600">{dateLabel}</p>
           <Link
-            href={`/result/${guide.id}`}
+            href={`/dashboard/huisstijl/${guide.id}`}
             className="text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors"
           >
             Open →

@@ -32,11 +32,12 @@ const registeredFonts = new Set<string>();
 async function registerGoogleFont(fontName: string): Promise<boolean> {
   if (registeredFonts.has(fontName)) return true;
   try {
-    const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
-      fontName
-    )}:wght@400;700&display=swap`;
+    // Google Fonts expects spaces as '+' in the family parameter
+    const familyParam = fontName.replace(/\s+/g, "+");
+    const cssUrl = `https://fonts.googleapis.com/css2?family=${familyParam}:ital,wght@0,400;0,700;1,400&display=swap`;
     const res = await fetch(cssUrl, {
       headers: {
+        // Firefox UA to get TTF instead of WOFF2 (react-pdf needs TTF)
         "User-Agent":
           "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0",
       },
@@ -44,14 +45,17 @@ async function registerGoogleFont(fontName: string): Promise<boolean> {
     if (!res.ok) return false;
     const css = await res.text();
     const blocks = css.split("@font-face");
-    const fonts: { src: string; fontWeight?: number }[] = [];
+    const fonts: { src: string; fontWeight?: number; fontStyle?: "italic" | "normal" }[] = [];
     for (const block of blocks) {
-      const urlMatch = block.match(/url\((https:\/\/[^)]+\.ttf)\)/);
+      const urlMatch = block.match(/url\((https:\/\/[^)]+\.(?:ttf|woff2?))\)/);
       const weightMatch = block.match(/font-weight:\s*(\d+)/);
+      const styleMatch = block.match(/font-style:\s*(italic|normal)/);
       if (urlMatch) {
+        const rawStyle = styleMatch?.[1];
         fonts.push({
           src: urlMatch[1],
           fontWeight: weightMatch ? parseInt(weightMatch[1], 10) : 400,
+          fontStyle: rawStyle === "italic" ? "italic" : "normal",
         });
       }
     }
@@ -69,17 +73,33 @@ async function registerGoogleFont(fontName: string): Promise<boolean> {
    LOGO LOADER
    ───────────────────────────────────────────────────────────── */
 
-async function svgToPngDataUri(svgInput: Buffer | string): Promise<string | null> {
+async function svgToPngDataUri(svgInput: Buffer | string, transparentBg = true): Promise<string | null> {
   try {
     const sharp = (await import("sharp")).default;
-    const pngBuf = await sharp(Buffer.isBuffer(svgInput) ? svgInput : Buffer.from(svgInput))
-      .resize(512, 512, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 0 } })
-      .png()
-      .toBuffer();
+    const inputBuf = Buffer.isBuffer(svgInput) ? svgInput : Buffer.from(String(svgInput));
+    const pipeline = sharp(inputBuf, { density: 300 }).resize(512, 512, {
+      fit: "contain",
+      background: transparentBg
+        ? { r: 255, g: 255, b: 255, alpha: 0 }
+        : { r: 255, g: 255, b: 255, alpha: 255 },
+    });
+    const pngBuf = await pipeline.png().toBuffer();
     return `data:image/png;base64,${pngBuf.toString("base64")}`;
   } catch (err) {
-    console.error("SVG to PNG conversion failed:", err);
-    return null;
+    // Retry with white background (some SVGs fail with alpha channel)
+    try {
+      const sharp = (await import("sharp")).default;
+      const inputBuf = Buffer.isBuffer(svgInput) ? svgInput : Buffer.from(String(svgInput));
+      const pngBuf = await sharp(inputBuf, { density: 150 })
+        .resize(512, 512, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 255 } })
+        .flatten({ background: { r: 255, g: 255, b: 255 } })
+        .png()
+        .toBuffer();
+      return `data:image/png;base64,${pngBuf.toString("base64")}`;
+    } catch {
+      console.error("SVG to PNG conversion failed:", err);
+      return null;
+    }
   }
 }
 
@@ -289,21 +309,24 @@ function PageFooter({ label, num, styles }: { label: string; num: string; styles
 
 type PdfProps = {
   result: BrandGuideResult;
-  logoDataUri: string | null;
+  logoDataUri: string | null;        // fullColor PNG
+  logoWhiteUri: string | null;       // mono-white PNG for dark backgrounds
+  logoPrimaryUri: string | null;     // mono-primary PNG for brand-colour backgrounds
   df: string; // resolved display font family
   bf: string; // resolved body font family
 };
 
-function BrandBookDocument({ result, logoDataUri, df, bf }: PdfProps) {
+function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, df, bf }: PdfProps) {
   const styles = buildStyles(df, bf);
   const colors = getColors(result);
   const primary = byCategory(result, "primary")[0]?.hex ?? "#0a0a0a";
   const accent = byCategory(result, "secondary")[0]?.hex ?? colors[1]?.hex ?? "#888";
   const today = new Date().toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
 
-  const renderLogo = (size: "sm" | "lg" = "lg") => {
-    if (logoDataUri) {
-      return <Image src={logoDataUri} style={size === "lg" ? styles.logoImage : styles.logoImageSmall} />;
+  const renderLogo = (size: "sm" | "lg" = "lg", overrideUri?: string | null) => {
+    const uri = overrideUri !== undefined ? overrideUri : logoDataUri;
+    if (uri) {
+      return <Image src={uri} style={size === "lg" ? styles.logoImage : styles.logoImageSmall} />;
     }
     const initial = (result.companyName[0] ?? "M").toUpperCase();
     return (
@@ -475,14 +498,14 @@ function BrandBookDocument({ result, logoDataUri, df, bf }: PdfProps) {
         <View style={[styles.grid2, { marginTop: 20 }]}>
           <View style={{ flex: 1 }}>
             <View style={[styles.logoBlock, { backgroundColor: primary, minHeight: 150 }]}>
-              {renderLogo("sm")}
+              {renderLogo("sm", logoPrimaryUri ?? logoWhiteUri)}
               <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Op merkkleur</Text>
           </View>
           <View style={{ flex: 1 }}>
             <View style={[styles.logoBlock, { backgroundColor: "#0a0a0a", minHeight: 150 }]}>
-              {renderLogo("sm")}
+              {renderLogo("sm", logoWhiteUri)}
               <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Op donkere achtergrond</Text>
@@ -1034,12 +1057,22 @@ export async function generateBrandBookPDF(
   const df = displayOk ? df_name : "Helvetica";
   const bf = bodyOk ? bf_name : "Helvetica";
 
-  const logoDataUri = await fetchLogoDataUri(result.logoImageUrl, result.logoVariants?.fullColor);
+  const [logoDataUri, logoWhiteUri, logoPrimaryUri] = await Promise.all([
+    fetchLogoDataUri(result.logoImageUrl, result.logoVariants?.fullColor),
+    result.logoVariants?.monoWhite
+      ? svgToPngDataUri(result.logoVariants.monoWhite)
+      : Promise.resolve(null),
+    result.logoVariants?.monoPrimary
+      ? svgToPngDataUri(result.logoVariants.monoPrimary)
+      : Promise.resolve(null),
+  ]);
 
   const doc = (
     <BrandBookDocument
       result={result}
       logoDataUri={logoDataUri}
+      logoWhiteUri={logoWhiteUri}
+      logoPrimaryUri={logoPrimaryUri}
       df={df}
       bf={bf}
     />
