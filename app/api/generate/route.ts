@@ -9,6 +9,7 @@ import { getUserSubscription } from "@/lib/subscription";
 import { BrandInput } from "@/types/brand";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 120; // Claude + logo generatie kan tot 2 minuten duren
 
 export async function POST(req: NextRequest) {
   try {
