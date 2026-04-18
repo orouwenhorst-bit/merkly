@@ -283,7 +283,7 @@ function buildStyles(df: string, bf: string) {
 
 function SectionHead({ num, title, subtitle, styles }: { num: string; title: string; subtitle?: string; styles: ReturnType<typeof buildStyles> }) {
   return (
-    <View>
+    <View wrap={false} minPresenceAhead={80}>
       <Text style={styles.sectionNum}>{num}</Text>
       <Text style={styles.sectionTitle}>{title}</Text>
       {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
@@ -416,7 +416,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
         <Page size="A4" style={styles.page}>
           <SectionHead num="01.1 — DOELGROEP" title="Persona's" subtitle="De mensen voor wie jullie merk bestaat" styles={styles} />
           {result.strategy.personas.map((p) => (
-            <View key={p.name} style={{ marginBottom: 24, padding: 20, backgroundColor: "#fafafa", borderRadius: 8 }}>
+            <View key={p.name} wrap={false} style={{ marginBottom: 24, padding: 20, backgroundColor: "#fafafa", borderRadius: 8 }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
                 <View>
                   <Text style={{ fontSize: 16, fontWeight: 700, color: "#0a0a0a", fontFamily: df }}>{p.name}</Text>
@@ -479,32 +479,32 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
         <Text style={styles.logoLabel}>Horizontale lockup</Text>
 
         {/* 2×2 grid: vertical + wordmark + on brand + on dark */}
-        <View style={[styles.grid2, { marginTop: 20 }]}>
-          <View style={{ flex: 1 }}>
-            <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", minHeight: 150 }]}>
+        <View wrap={false} style={[styles.grid2, { marginTop: 20 }]}>
+          <View style={{ flex: 1, width: "50%" }}>
+            <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", minHeight: 150, flex: 0 }]}>
               {renderLogo("sm")}
               <Text style={{ fontSize: 14, fontWeight: 700, color: primary, marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Verticale lockup</Text>
           </View>
-          <View style={{ flex: 1 }}>
-            <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", minHeight: 150 }]}>
+          <View style={{ flex: 1, width: "50%" }}>
+            <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", minHeight: 150, flex: 0 }]}>
               <Text style={{ fontSize: 22, fontWeight: 700, color: primary, fontFamily: df, letterSpacing: -0.5 }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Woordmerk</Text>
           </View>
         </View>
-        <View style={[styles.grid2, { marginTop: 20 }]}>
-          <View style={{ flex: 1 }}>
-            <View style={[styles.logoBlock, { backgroundColor: primary, minHeight: 150 }]}>
+        <View wrap={false} style={[styles.grid2, { marginTop: 8 }]}>
+          <View style={{ flex: 1, width: "50%" }}>
+            <View style={[styles.logoBlock, { backgroundColor: primary, minHeight: 150, flex: 0 }]}>
               {/* Altijd wit logo op gekleurde achtergrond */}
               {renderLogo("sm", logoWhiteUri)}
               <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Op merkkleur</Text>
           </View>
-          <View style={{ flex: 1 }}>
-            <View style={[styles.logoBlock, { backgroundColor: "#0a0a0a", minHeight: 150 }]}>
+          <View style={{ flex: 1, width: "50%" }}>
+            <View style={[styles.logoBlock, { backgroundColor: "#0a0a0a", minHeight: 150, flex: 0 }]}>
               {/* Altijd wit logo op donkere achtergrond */}
               {renderLogo("sm", logoWhiteUri)}
               <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
@@ -519,7 +519,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
       <Page size="A4" style={styles.page}>
         <SectionHead num="02.2 — RICHTLIJNEN" title="Logo-richtlijnen" subtitle="Regels voor consistent logogebruik" styles={styles} />
 
-        <View style={styles.grid2}>
+        <View wrap={false} style={styles.grid2}>
           <View style={[styles.guidelineBox, styles.guidelineBoxDo]}>
             <Text style={[styles.guidelineTitle, styles.guidelineTitleDo]}>Wel doen</Text>
             {result.logoGuidelines?.doList?.map((item, i) => (
@@ -557,7 +557,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             <View key={cat}>
               <Text style={styles.colorCategoryLabel}>{catLabel}</Text>
               {catColors.map((color) => (
-                <View key={color.hex} style={styles.colorRow}>
+                <View key={color.hex} wrap={false} style={styles.colorRow}>
                   <View style={[styles.colorSwatch, { backgroundColor: color.hex }]} />
                   <View style={styles.colorInfo}>
                     <Text style={styles.colorName}>{color.name}</Text>
@@ -637,7 +637,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
 
         {/* Font showcases */}
         {result.typography?.fonts?.map((font) => (
-          <View key={font.name} style={styles.fontShowcase}>
+          <View key={font.name} wrap={false} style={styles.fontShowcase}>
             <Text style={styles.fontShowcaseLabel}>
               {font.category === "display" ? "Display" : font.category === "body" ? "Body" : "Accent"} — {font.name}
             </Text>
@@ -715,7 +715,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
         </View>
 
         {/* Do's and don'ts */}
-        <View style={[styles.grid2, { marginTop: 24 }]}>
+        <View wrap={false} style={[styles.grid2, { marginTop: 24 }]}>
           <View style={[styles.guidelineBox, styles.guidelineBoxDo]}>
             <Text style={[styles.guidelineTitle, styles.guidelineTitleDo]}>Wel doen</Text>
             {result.toneOfVoice?.doList?.map((item, i) => (
@@ -773,7 +773,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             <Text style={styles.copyText}>{result.brandVoiceExamples.aboutUs}</Text>
           </View>
 
-          <View style={styles.grid2}>
+          <View wrap={false} style={styles.grid2}>
             <View style={[styles.copyBlock, { flex: 1 }]}>
               <Text style={styles.copyLabel}>Advertentietekst</Text>
               <Text style={styles.copyText}>{result.brandVoiceExamples.adCopy}</Text>
@@ -820,7 +820,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
               </View>
             </View>
 
-            <View style={[styles.grid2, { marginTop: 16 }]}>
+            <View wrap={false} style={[styles.grid2, { marginTop: 16 }]}>
               <View style={[styles.guidelineBox, styles.guidelineBoxDo]}>
                 <Text style={[styles.guidelineTitle, styles.guidelineTitleDo]}>Wel</Text>
                 {result.imageryGuidelines.doList?.map((item, i) => (
@@ -842,7 +842,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
           <View>
             <Text style={styles.label}>Iconografie</Text>
             <View style={{ padding: 16, backgroundColor: "#fafafa", borderRadius: 8 }}>
-              <View style={[styles.grid2, { marginBottom: 0 }]}>
+              <View wrap={false} style={[styles.grid2, { marginBottom: 0 }]}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Stijl</Text>
                   <Text style={{ fontSize: 10, color: "#3f3f46", fontFamily: bf }}>{result.iconographyGuidelines.style}</Text>
@@ -895,7 +895,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
 
         {/* Business card */}
         <Text style={styles.label}>Visitekaartje</Text>
-        <View style={[styles.grid2, { marginBottom: 24 }]}>
+        <View wrap={false} style={[styles.grid2, { marginBottom: 24 }]}>
           <View style={{ flex: 1, aspectRatio: 1.8, backgroundColor: primary, borderRadius: 8, padding: 16, justifyContent: "space-between" }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               {renderLogo("sm")}
@@ -963,12 +963,12 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
           <>
             <Page size="A4" style={styles.page}>
               <SectionHead num="10 — MOCKUPS" title="Visuele toepassingen" subtitle="Zo komt jullie merk tot leven op verschillende touchpoints" styles={styles} />
-              <View style={styles.grid2}>
-                <View style={{ flex: 1 }}>
+              <View wrap={false} style={styles.grid2}>
+                <View style={{ flex: 1, width: "50%" }}>
                   <InstagramPostMockup {...mp} />
                   <Text style={[styles.logoLabel, { marginBottom: 16 }]}>Instagram post</Text>
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, width: "50%" }}>
                   <SocialBannerMockup {...mp} />
                   <Text style={[styles.logoLabel, { marginBottom: 16 }]}>Social media profiel</Text>
                   <CoffeeCupMockup {...mp} />
@@ -982,12 +982,12 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
               <SectionHead num="10.1 — MOCKUPS" title="Digitaal & print" subtitle="Website, presentatie, briefpapier en factuur in jullie huisstijl" styles={styles} />
               <WebsiteMockup {...mp} />
               <Text style={[styles.logoLabel, { marginBottom: 16 }]}>Website</Text>
-              <View style={styles.grid2}>
-                <View style={{ flex: 1 }}>
+              <View wrap={false} style={styles.grid2}>
+                <View style={{ flex: 1, width: "50%" }}>
                   <PresentationSlideMockup {...mp} />
                   <Text style={styles.logoLabel}>Presentatie titelslide</Text>
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, width: "50%" }}>
                   <MerchandiseMockup {...mp} />
                   <Text style={styles.logoLabel}>Merchandise</Text>
                 </View>
@@ -997,12 +997,12 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
 
             <Page size="A4" style={styles.page}>
               <SectionHead num="10.2 — MOCKUPS" title="Zakelijke documenten" subtitle="Briefpapier en factuur in jullie huisstijl" styles={styles} />
-              <View style={styles.grid2}>
-                <View style={{ flex: 1 }}>
+              <View wrap={false} style={styles.grid2}>
+                <View style={{ flex: 1, width: "50%" }}>
                   <LetterheadMockup {...mp} />
                   <Text style={styles.logoLabel}>Briefpapier</Text>
                 </View>
-                <View style={{ flex: 1 }}>
+                <View style={{ flex: 1, width: "50%" }}>
                   <InvoiceMockup {...mp} />
                   <Text style={styles.logoLabel}>Factuur</Text>
                 </View>
