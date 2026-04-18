@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, createServiceClient } from "@/lib/supabase";
 import { BrandGuideResult } from "@/types/brand";
+import { recolorSvgToWhite } from "@/lib/svg-processing";
 
 export const dynamic = "force-dynamic";
 
@@ -51,9 +52,14 @@ export async function GET(
     return NextResponse.json({ error: "Ongeldige variant" }, { status: 400 });
   }
 
-  const svgString = result.logoVariants?.[variant as keyof typeof result.logoVariants];
+  let svgString = result.logoVariants?.[variant as keyof typeof result.logoVariants];
   if (!svgString || typeof svgString !== "string") {
     return NextResponse.json({ error: "Logo variant niet beschikbaar" }, { status: 404 });
+  }
+
+  // For monoWhite, apply cutout fix on-the-fly so older stored SVGs are also correct
+  if (variant === "monoWhite") {
+    svgString = recolorSvgToWhite(svgString);
   }
 
   const safeName = result.companyName
@@ -61,6 +67,25 @@ export async function GET(
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
     .toLowerCase();
+
+  const format = req.nextUrl.searchParams.get("format") === "png" ? "png" : "svg";
+
+  if (format === "png") {
+    const sharp = (await import("sharp")).default;
+    // Give sharp a default size; the SVG viewBox preserves the logo's aspect ratio
+    const pngBuffer = await sharp(Buffer.from(svgString))
+      .resize(512, 512, { fit: "inside", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer();
+
+    return new NextResponse(new Uint8Array(pngBuffer), {
+      headers: {
+        "Content-Type": "image/png",
+        "Content-Disposition": `attachment; filename="${safeName}-logo-${variant}.png"`,
+        "Cache-Control": "no-store",
+      },
+    });
+  }
 
   return new NextResponse(svgString, {
     headers: {

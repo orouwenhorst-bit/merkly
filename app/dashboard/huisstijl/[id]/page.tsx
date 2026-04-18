@@ -11,6 +11,7 @@ import {
   CopyLinkButton,
   FontLoader,
 } from "@/components/dashboard/HuisstijlDetailActions";
+import { recolorSvgToWhite } from "@/lib/svg-processing";
 import type { BrandGuideResult } from "@/types/brand";
 
 export const dynamic = "force-dynamic";
@@ -228,13 +229,15 @@ export default async function HuisstijlDetailPage({
                       className="group relative rounded-xl border border-neutral-800 overflow-hidden flex flex-col"
                     >
                       <div
-                        className="aspect-square flex items-center justify-center p-6"
+                        className="aspect-square flex items-center justify-center p-4"
                         style={{ background: bg }}
                       >
                         <div
-                          className="w-full h-full max-w-[72px] max-h-[72px] [&_svg]:w-full [&_svg]:h-full"
+                          className="w-3/4 h-3/4 [&_svg]:w-full [&_svg]:h-full"
                           dangerouslySetInnerHTML={{
-                            __html: normalizeSvg(svgString),
+                            __html: normalizeSvg(
+                              key === "monoWhite" ? recolorSvgToWhite(svgString) : svgString
+                            ),
                           }}
                         />
                       </div>
@@ -311,9 +314,9 @@ export default async function HuisstijlDetailPage({
                           ? "Body"
                           : "Accent"}
                       </span>
-                      {font.googleFontsUrl && (
+                      {font.name && (
                         <a
-                          href={font.googleFontsUrl}
+                          href={`https://fonts.google.com/specimen/${font.name.replace(/ /g, "+")}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[10px] text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1"
