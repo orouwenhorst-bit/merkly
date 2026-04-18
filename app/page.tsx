@@ -1,9 +1,15 @@
 import Link from "next/link";
 import AuthButton from "@/components/AuthButton";
+import { createServerClient } from "@/lib/supabase";
+import { getUserSubscription } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const supabase = await createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPremium = user ? (await getUserSubscription(user.id)).isPremium : false;
+
   return (
     <main className="min-h-screen bg-neutral-950 text-white overflow-x-hidden">
       {/* Nav */}
@@ -13,9 +19,17 @@ export default async function Home() {
           <span className="text-violet-400">ly</span>
         </span>
         <div className="flex items-center gap-4">
-          <Link href="/generate" className="text-sm text-neutral-400 hover:text-white transition-colors">
-            Probeer gratis
-          </Link>
+          {/* Alleen tonen als niet ingelogd of gratis gebruiker */}
+          {(!user || !isPremium) && (
+            <Link href="/generate" className="text-sm text-neutral-400 hover:text-white transition-colors">
+              {user ? "Genereer" : "Probeer gratis"}
+            </Link>
+          )}
+          {user && isPremium && (
+            <Link href="/dashboard" className="text-sm text-neutral-400 hover:text-white transition-colors">
+              Dashboard
+            </Link>
+          )}
           <AuthButton />
         </div>
       </nav>

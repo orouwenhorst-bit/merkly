@@ -1,12 +1,20 @@
-"use client";
-
-import { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { createServerClient, createServiceClient } from "@/lib/supabase";
+import { getUserSubscription } from "@/lib/subscription";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import {
+  LogoDownloadButton,
+  PdfDownloadButton,
+  PdfDownloadButtonSmall,
+  CopyHexButton,
+  CopyLinkButton,
+  FontLoader,
+} from "@/components/dashboard/HuisstijlDetailActions";
 import type { BrandGuideResult } from "@/types/brand";
 
-/* ── helpers ── */
+export const dynamic = "force-dynamic";
+
 function normalizeSvg(svg: string): string {
   return svg.replace(/<svg([^>]*)>/, (_, attrs) => {
     const cleaned = attrs
@@ -19,225 +27,82 @@ function normalizeSvg(svg: string): string {
 
 function isDark(hex: string) {
   const c = hex.replace("#", "");
-  const r = parseInt(c.slice(0, 2), 16);
-  const g = parseInt(c.slice(2, 4), 16);
-  const b = parseInt(c.slice(4, 6), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000 < 128;
-}
-
-type GuideData = {
-  id: string;
-  company_name: string;
-  industry: string | null;
-  created_at: string;
-  is_premium: boolean;
-  user_id: string | null;
-  result: BrandGuideResult;
-};
-
-/* ── Logo variant preview card ── */
-function LogoVariantCard({
-  label,
-  svgString,
-  background,
-  guideId,
-  variantKey,
-  isPremium,
-}: {
-  label: string;
-  svgString: string;
-  background: string;
-  guideId: string;
-  variantKey: string;
-  isPremium: boolean;
-}) {
-  const [downloading, setDownloading] = useState(false);
-
-  async function download() {
-    if (!isPremium) return;
-    setDownloading(true);
-    try {
-      const res = await fetch(`/api/guides/${guideId}/download-logo?variant=${variantKey}`);
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `logo-${variantKey}.svg`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      alert("Download mislukt. Probeer het opnieuw.");
-    } finally {
-      setDownloading(false);
-    }
-  }
-
   return (
-    <div className="group relative rounded-xl border border-neutral-800 overflow-hidden flex flex-col">
-      <div
-        className="aspect-square flex items-center justify-center p-8"
-        style={{ backgroundColor: background }}
-      >
-        <div
-          className="w-full h-full max-w-[80px] max-h-[80px] [&_svg]:w-full [&_svg]:h-full"
-          dangerouslySetInnerHTML={{ __html: normalizeSvg(svgString) }}
-        />
-      </div>
-      <div className="p-3 bg-neutral-900 border-t border-neutral-800 flex items-center justify-between gap-2">
-        <span className="text-xs text-neutral-400 truncate">{label}</span>
-        {isPremium ? (
-          <button
-            onClick={download}
-            disabled={downloading}
-            className="shrink-0 text-[10px] font-semibold text-violet-300 hover:text-violet-200 transition-colors disabled:opacity-50 flex items-center gap-1"
-          >
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            {downloading ? "..." : "SVG"}
-          </button>
-        ) : (
-          <span className="text-[10px] text-neutral-600 flex items-center gap-1">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Premium
-          </span>
-        )}
-      </div>
-    </div>
+    (parseInt(c.slice(0, 2), 16) * 299 +
+      parseInt(c.slice(2, 4), 16) * 587 +
+      parseInt(c.slice(4, 6), 16) * 114) /
+      1000 <
+    128
   );
 }
 
-/* ── Main page ── */
-export default function HuisstijlDetailPage() {
-  const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const guideId = params.id;
+const LOGO_VARIANTS = [
+  { key: "fullColor", label: "Volledig kleur", bg: "#ffffff" },
+  { key: "monoBlack", label: "Zwart", bg: "#ffffff" },
+  { key: "monoWhite", label: "Wit", bg: "#111111" },
+  { key: "monoPrimary", label: "Merkkleur", bg: "#f4f4f5" },
+  {
+    key: "transparent",
+    label: "Transparant",
+    bg: "repeating-conic-gradient(#cccccc 0% 25%, #ffffff 0% 50%) 0 0 / 16px 16px",
+  },
+] as const;
 
-  const [guide, setGuide] = useState<GuideData | null>(null);
-  const [isPremiumUser, setIsPremiumUser] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [downloading, setDownloading] = useState(false);
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [copiedHex, setCopiedHex] = useState<string | null>(null);
+export default async function HuisstijlDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/guides/${guideId}/detail`);
-        if (res.status === 401) { router.push("/login"); return; }
-        if (res.status === 403 || res.status === 404) { router.push("/dashboard/huisstijlen"); return; }
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        setGuide(data.guide);
-        setIsPremiumUser(data.isPremiumUser);
-      } catch {
-        setError("Kan huisstijl niet laden.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [guideId, router]);
+  // Auth
+  const serverClient = await createServerClient();
+  const {
+    data: { user },
+  } = await serverClient.auth.getUser();
+  if (!user) redirect(`/login?redirect=/dashboard/huisstijl/${id}`);
 
-  // Inject Google Fonts for typography preview
-  useEffect(() => {
-    if (!guide) return;
-    const url = guide.result?.typography?.googleFontsUrl;
-    if (!url) return;
-    const id = `detail-fonts-${guideId}`;
-    if (document.getElementById(id)) { setFontsLoaded(true); return; }
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href = url;
-    link.onload = () => setFontsLoaded(true);
-    document.head.appendChild(link);
-  }, [guide, guideId]);
+  // Guide ophalen
+  const supabase = createServiceClient();
+  const { data: guide, error } = await supabase
+    .from("brand_guides")
+    .select("id, company_name, industry, created_at, is_premium, user_id, result")
+    .eq("id", id)
+    .single();
 
-  const downloadPDF = useCallback(async () => {
-    if (!guide) return;
-    if (!isPremiumUser && !guide.is_premium) {
-      router.push(`/upgrade?guideId=${guideId}`);
-      return;
-    }
-    setDownloading(true);
-    try {
-      const res = await fetch("/api/export-pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guideId }),
-      });
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${guide.company_name.toLowerCase().replace(/[^a-z0-9]/g, "-")}-huisstijl.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      alert("PDF downloaden mislukt. Probeer het opnieuw.");
-    } finally {
-      setDownloading(false);
-    }
-  }, [guide, isPremiumUser, guideId, router]);
+  if (error || !guide) notFound();
+  if (guide.user_id !== user.id) notFound();
 
-  async function copyHex(hex: string) {
-    await navigator.clipboard.writeText(hex);
-    setCopiedHex(hex);
-    setTimeout(() => setCopiedHex(null), 1500);
-  }
+  const { isPremium: isPremiumUser } = await getUserSubscription(user.id);
+  const canDownload = isPremiumUser || Boolean(guide.is_premium);
 
-  if (loading) {
-    return (
-      <DashboardShell active="huisstijlen">
-        <div className="flex items-center justify-center py-32">
-          <div className="flex gap-2">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="w-2 h-2 rounded-full bg-violet-500 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-            ))}
-          </div>
-        </div>
-      </DashboardShell>
-    );
-  }
-
-  if (error || !guide) {
-    return (
-      <DashboardShell active="huisstijlen">
-        <div className="text-center py-32 text-neutral-500">{error ?? "Niet gevonden"}</div>
-      </DashboardShell>
-    );
-  }
-
-  const result = guide.result;
+  const result = guide.result as BrandGuideResult;
   const colors = result?.colorPalette?.colors ?? [];
-  const primary = colors.find(c => c.category === "primary")?.hex ?? colors[0]?.hex ?? "#8b5cf6";
+  const primary =
+    colors.find((c) => c.category === "primary")?.hex ??
+    colors[0]?.hex ??
+    "#8b5cf6";
   const fonts = result?.typography?.fonts ?? [];
-  const displayFont = fonts.find(f => f.category === "display")?.name ?? fonts[0]?.name ?? "";
-  const bodyFont = fonts.find(f => f.category === "body")?.name ?? fonts[1]?.name ?? "";
+  const fontsUrl = result?.typography?.googleFontsUrl ?? "";
   const hasLogo = !!result?.logoVariants?.fullColor;
-  const canDownload = isPremiumUser || guide.is_premium;
 
-  const logoVariants = hasLogo
-    ? [
-        { key: "fullColor", label: "Volledig kleur", bg: "#ffffff" },
-        { key: "monoBlack", label: "Zwart", bg: "#ffffff" },
-        { key: "monoWhite", label: "Wit", bg: "#111111" },
-        { key: "monoPrimary", label: "Merkkleur", bg: "#f4f4f5" },
-        { key: "transparent", label: "Transparant", bg: "repeating-conic-gradient(#cccccc 0% 25%, #ffffff 0% 50%) 0 0 / 16px 16px" },
-      ]
-    : [];
+  const createdAt = new Date(guide.created_at).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <DashboardShell active="huisstijlen">
+      {/* Inject Google Fonts for typography preview */}
+      {fontsUrl && <FontLoader url={fontsUrl} />}
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-neutral-500 mb-6">
-        <Link href="/dashboard/huisstijlen" className="hover:text-white transition-colors">
+        <Link
+          href="/dashboard/huisstijlen"
+          className="hover:text-white transition-colors"
+        >
           Huisstijlen
         </Link>
         <span>/</span>
@@ -247,12 +112,13 @@ export default function HuisstijlDetailPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
         <div className="flex items-start gap-4">
-          {/* Logo preview */}
           {result?.logoVariants?.fullColor ? (
             <div className="w-16 h-16 rounded-xl bg-white border border-neutral-200 flex items-center justify-center overflow-hidden shrink-0">
               <div
                 className="w-12 h-12 [&_svg]:w-full [&_svg]:h-full"
-                dangerouslySetInnerHTML={{ __html: normalizeSvg(result.logoVariants.fullColor) }}
+                dangerouslySetInnerHTML={{
+                  __html: normalizeSvg(result.logoVariants.fullColor),
+                }}
               />
             </div>
           ) : (
@@ -274,14 +140,18 @@ export default function HuisstijlDetailPage() {
                 </span>
               )}
             </div>
-            {guide.industry && <p className="text-neutral-500 text-sm mt-1">{guide.industry}</p>}
+            {guide.industry && (
+              <p className="text-neutral-500 text-sm mt-1">{guide.industry}</p>
+            )}
             {result?.toneOfVoice?.tagline && (
-              <p className="text-neutral-400 text-sm mt-1 italic">"{result.toneOfVoice.tagline}"</p>
+              <p className="text-neutral-400 text-sm mt-1 italic">
+                &ldquo;{result.toneOfVoice.tagline}&rdquo;
+              </p>
             )}
           </div>
         </div>
 
-        {/* Action buttons */}
+        {/* Acties */}
         <div className="flex gap-2 shrink-0 flex-wrap">
           <Link
             href={`/result/${guide.id}`}
@@ -293,39 +163,26 @@ export default function HuisstijlDetailPage() {
             </svg>
             Online bekijken
           </Link>
-          <button
-            onClick={downloadPDF}
-            disabled={downloading}
-            className={`inline-flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all disabled:opacity-50 ${
-              canDownload
-                ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/25"
-                : "bg-neutral-800/60 border border-neutral-700 text-neutral-400 hover:bg-neutral-800"
-            }`}
-          >
-            {downloading ? (
-              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-            )}
-            {downloading ? "Bezig..." : canDownload ? "Download PDF" : "PDF (Premium ✦)"}
-          </button>
+          <PdfDownloadButtonSmall
+            guideId={guide.id}
+            companyName={guide.company_name}
+            canDownload={canDownload}
+          />
         </div>
       </div>
 
-      {/* Premium upsell banner for free users */}
+      {/* Premium upsell banner */}
       {!canDownload && (
         <div className="relative mb-8 overflow-hidden rounded-2xl border border-violet-500/30 bg-gradient-to-r from-violet-600/10 via-fuchsia-600/10 to-neutral-900 p-5">
           <div className="absolute -top-12 -right-12 w-40 h-40 bg-violet-500/20 blur-3xl rounded-full pointer-events-none" />
           <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-white mb-1">✦ Upgrade naar Premium</p>
+              <p className="text-sm font-semibold text-white mb-1">
+                ✦ Upgrade naar Premium
+              </p>
               <p className="text-xs text-neutral-400 max-w-md">
-                Download je brand guide als PDF, alle logo-varianten (SVG) en gebruik de guide onbeperkt voor elk project.
+                Download je brand guide als PDF, alle logo-varianten (SVG) en
+                gebruik de guide onbeperkt voor elk project.
               </p>
             </div>
             <Link
@@ -339,72 +196,94 @@ export default function HuisstijlDetailPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column: Logo variants + Colors + Fonts */}
+        {/* Linker kolom */}
         <div className="lg:col-span-2 space-y-6">
 
-          {/* Logo variants */}
+          {/* Logo varianten */}
           {hasLogo && (
             <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-semibold text-white">Logo-varianten</h2>
+                <h2 className="text-base font-semibold text-white">
+                  Logo-varianten
+                </h2>
                 {!canDownload && (
                   <span className="text-xs text-neutral-500 flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    Download vereist Premium
+                    Downloads vereisen Premium
                   </span>
                 )}
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                {logoVariants.map(({ key, label, bg }) => {
-                  const svgString = result.logoVariants?.[key as keyof typeof result.logoVariants];
+                {LOGO_VARIANTS.map(({ key, label, bg }) => {
+                  const svgString =
+                    result?.logoVariants?.[
+                      key as keyof typeof result.logoVariants
+                    ];
                   if (!svgString || typeof svgString !== "string") return null;
                   return (
-                    <LogoVariantCard
+                    <div
                       key={key}
-                      label={label}
-                      svgString={svgString}
-                      background={bg}
-                      guideId={guide.id}
-                      variantKey={key}
-                      isPremium={canDownload}
-                    />
+                      className="group relative rounded-xl border border-neutral-800 overflow-hidden flex flex-col"
+                    >
+                      <div
+                        className="aspect-square flex items-center justify-center p-6"
+                        style={{ background: bg }}
+                      >
+                        <div
+                          className="w-full h-full max-w-[72px] max-h-[72px] [&_svg]:w-full [&_svg]:h-full"
+                          dangerouslySetInnerHTML={{
+                            __html: normalizeSvg(svgString),
+                          }}
+                        />
+                      </div>
+                      <div className="p-2.5 bg-neutral-900 border-t border-neutral-800 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-neutral-400 truncate">
+                          {label}
+                        </span>
+                        <LogoDownloadButton
+                          guideId={guide.id}
+                          variantKey={key}
+                          canDownload={canDownload}
+                        />
+                      </div>
+                    </div>
                   );
                 })}
               </div>
             </section>
           )}
 
-          {/* Color palette */}
+          {/* Kleurenpalet */}
           {colors.length > 0 && (
             <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-6">
-              <h2 className="text-base font-semibold text-white mb-4">Kleurenpalet</h2>
-              <div className="space-y-3">
+              <h2 className="text-base font-semibold text-white mb-4">
+                Kleurenpalet
+              </h2>
+              <div className="space-y-2">
                 {colors.map((color) => (
-                  <div key={color.hex} className="flex items-center gap-4 rounded-xl border border-neutral-800 overflow-hidden">
-                    <div className="w-16 h-14 shrink-0" style={{ backgroundColor: color.hex }} />
+                  <div
+                    key={color.hex}
+                    className="flex items-center gap-4 rounded-xl border border-neutral-800 overflow-hidden"
+                  >
+                    <div
+                      className="w-14 h-12 shrink-0"
+                      style={{ backgroundColor: color.hex }}
+                    />
                     <div className="flex-1 min-w-0 py-2">
-                      <p className="text-sm font-semibold text-white truncate">{color.name}</p>
-                      <p className="text-xs text-neutral-500 truncate">{color.usage}</p>
+                      <p className="text-sm font-semibold text-white truncate">
+                        {color.name}
+                      </p>
+                      <p className="text-xs text-neutral-500 truncate">
+                        {color.usage}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2 pr-4 shrink-0">
-                      <span className="text-xs font-mono text-neutral-400">{color.hex.toUpperCase()}</span>
-                      <button
-                        onClick={() => copyHex(color.hex)}
-                        className="p-1.5 rounded-lg text-neutral-600 hover:text-white hover:bg-neutral-800 transition-colors"
-                        title="Kopieer hex"
-                      >
-                        {copiedHex === color.hex ? (
-                          <svg className="w-3.5 h-3.5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                          </svg>
-                        ) : (
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        )}
-                      </button>
+                      <span className="text-xs font-mono text-neutral-400">
+                        {color.hex.toUpperCase()}
+                      </span>
+                      <CopyHexButton hex={color.hex} />
                     </div>
                   </div>
                 ))}
@@ -412,16 +291,25 @@ export default function HuisstijlDetailPage() {
             </section>
           )}
 
-          {/* Typography */}
+          {/* Typografie */}
           {fonts.length > 0 && (
             <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-6">
-              <h2 className="text-base font-semibold text-white mb-4">Typografie</h2>
+              <h2 className="text-base font-semibold text-white mb-4">
+                Typografie
+              </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {fonts.map((font) => (
-                  <div key={font.name} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-3">
+                  <div
+                    key={font.name}
+                    className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 space-y-3"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">
-                        {font.category === "display" ? "Display" : font.category === "body" ? "Body" : "Accent"}
+                        {font.category === "display"
+                          ? "Display"
+                          : font.category === "body"
+                          ? "Body"
+                          : "Accent"}
                       </span>
                       {font.googleFontsUrl && (
                         <a
@@ -437,82 +325,115 @@ export default function HuisstijlDetailPage() {
                         </a>
                       )}
                     </div>
-                    <div style={{ fontFamily: `'${font.name}', ${font.fallback ?? "sans-serif"}` }}>
-                      <p className="text-3xl font-bold text-white leading-none">Aa</p>
+                    <div
+                      style={{
+                        fontFamily: `'${font.name}', ${font.fallback ?? "sans-serif"}`,
+                      }}
+                    >
+                      <p className="text-4xl font-bold text-white leading-none">
+                        Aa
+                      </p>
                       <p
                         className="text-[11px] text-neutral-400 mt-3 leading-relaxed"
-                        style={{ fontFamily: `'${font.name}', ${font.fallback ?? "sans-serif"}` }}
+                        style={{
+                          fontFamily: `'${font.name}', ${font.fallback ?? "sans-serif"}`,
+                        }}
                       >
-                        ABCDEFGHIJKLMNOPQRSTUVWXYZ<br />
-                        abcdefghijklmnopqrstuvwxyz<br />
+                        ABCDEFGHIJKLMNOPQRSTUVWXYZ
+                        <br />
+                        abcdefghijklmnopqrstuvwxyz
+                        <br />
                         0123456789 !@#&
                       </p>
                     </div>
                     <div className="pt-3 border-t border-neutral-800 space-y-0.5">
-                      <p className="text-xs font-semibold text-white">{font.name}</p>
-                      <p className="text-[10px] text-neutral-500">{font.usage}</p>
-                      <p className="text-[10px] text-neutral-600">Gewichten: {font.weights?.join(", ")}</p>
+                      <p className="text-xs font-semibold text-white">
+                        {font.name}
+                      </p>
+                      <p className="text-[10px] text-neutral-500">
+                        {font.usage}
+                      </p>
+                      <p className="text-[10px] text-neutral-600">
+                        Gewichten: {font.weights?.join(", ")}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
               {result?.typography?.pairingRationale && (
                 <div className="mt-4 p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
-                  <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Waarom deze combinatie</p>
-                  <p className="text-xs text-neutral-400 leading-relaxed">{result.typography.pairingRationale}</p>
+                  <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">
+                    Waarom deze combinatie
+                  </p>
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    {result.typography.pairingRationale}
+                  </p>
                 </div>
               )}
             </section>
           )}
         </div>
 
-        {/* Right column: Quick info + Merkstrategie */}
+        {/* Rechter kolom */}
         <div className="space-y-6">
 
-          {/* Quick stats */}
-          <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-5 space-y-4">
-            <h2 className="text-base font-semibold text-white">Overzicht</h2>
+          {/* Overzicht */}
+          <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-5">
+            <h2 className="text-base font-semibold text-white mb-4">
+              Overzicht
+            </h2>
             <div className="space-y-3">
-              {[
-                { label: "Gegenereerd", value: new Date(guide.created_at).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }) },
-                { label: "Type", value: guide.is_premium ? "Premium guide" : "Gratis guide" },
-                { label: "Branche", value: guide.industry ?? "—" },
-                { label: "Kleuren", value: `${colors.length} kleuren` },
-                { label: "Lettertypen", value: fonts.length > 0 ? fonts.map(f => f.name).join(" + ") : "—" },
-              ].map(({ label, value }) => (
+              {(
+                [
+                  { label: "Gegenereerd", value: createdAt },
+                  {
+                    label: "Type",
+                    value: guide.is_premium ? "Premium guide" : "Gratis guide",
+                  },
+                  { label: "Branche", value: guide.industry ?? "—" },
+                  { label: "Kleuren", value: `${colors.length} kleuren` },
+                  {
+                    label: "Lettertypen",
+                    value:
+                      fonts.length > 0
+                        ? fonts.map((f) => f.name).join(" + ")
+                        : "—",
+                  },
+                ] as { label: string; value: string }[]
+              ).map(({ label, value }) => (
                 <div key={label} className="flex items-start justify-between gap-2">
-                  <span className="text-xs text-neutral-500 shrink-0">{label}</span>
-                  <span className="text-xs text-neutral-300 text-right">{value}</span>
+                  <span className="text-xs text-neutral-500 shrink-0">
+                    {label}
+                  </span>
+                  <span className="text-xs text-neutral-300 text-right">
+                    {value}
+                  </span>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* PDF download card */}
+          {/* PDF download */}
           <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-5">
-            <h2 className="text-base font-semibold text-white mb-3">Brand guide PDF</h2>
+            <h2 className="text-base font-semibold text-white mb-3">
+              Brand guide PDF
+            </h2>
             <p className="text-xs text-neutral-500 leading-relaxed mb-4">
-              Professionele PDF met alle merkrichtlijnen: logo, kleuren, typografie, tone of voice, mockups en meer.
+              Professionele PDF met alle merkrichtlijnen: logo, kleuren,
+              typografie, tone of voice, mockups en meer.
             </p>
-            <button
-              onClick={downloadPDF}
-              disabled={downloading}
-              className={`w-full flex items-center justify-center gap-2 text-sm font-semibold py-3 rounded-xl transition-all disabled:opacity-50 ${
-                canDownload
-                  ? "bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/25"
-                  : "bg-neutral-800/60 border border-neutral-700 text-neutral-500 cursor-default"
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              {downloading ? "Bezig..." : canDownload ? "Download PDF" : "Vereist Premium ✦"}
-            </button>
+            <PdfDownloadButton
+              guideId={guide.id}
+              companyName={guide.company_name}
+              canDownload={canDownload}
+            />
           </section>
 
-          {/* Share */}
+          {/* Deel-link */}
           <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-5">
-            <h2 className="text-base font-semibold text-white mb-3">Deel je huisstijl</h2>
+            <h2 className="text-base font-semibold text-white mb-3">
+              Deel je huisstijl
+            </h2>
             <p className="text-xs text-neutral-500 leading-relaxed mb-4">
               Stuur de publieke link naar klanten, medewerkers of partners.
             </p>
@@ -522,23 +443,35 @@ export default function HuisstijlDetailPage() {
           {/* Merkstrategie */}
           {result?.strategy && (
             <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-5">
-              <h2 className="text-base font-semibold text-white mb-4">Merkstrategie</h2>
+              <h2 className="text-base font-semibold text-white mb-4">
+                Merkstrategie
+              </h2>
               <div className="space-y-4">
                 {result.strategy.mission && (
                   <div>
-                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Missie</p>
-                    <p className="text-xs text-neutral-400 leading-relaxed">{result.strategy.mission}</p>
+                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">
+                      Missie
+                    </p>
+                    <p className="text-xs text-neutral-400 leading-relaxed">
+                      {result.strategy.mission}
+                    </p>
                   </div>
                 )}
                 {result.strategy.vision && (
                   <div>
-                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Visie</p>
-                    <p className="text-xs text-neutral-400 leading-relaxed">{result.strategy.vision}</p>
+                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">
+                      Visie
+                    </p>
+                    <p className="text-xs text-neutral-400 leading-relaxed">
+                      {result.strategy.vision}
+                    </p>
                   </div>
                 )}
                 {result.strategy.personalityTraits?.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Merkpersoonlijkheid</p>
+                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">
+                      Merkpersoonlijkheid
+                    </p>
                     <div className="flex flex-wrap gap-1.5">
                       {result.strategy.personalityTraits.map((t) => (
                         <span
@@ -557,37 +490,5 @@ export default function HuisstijlDetailPage() {
         </div>
       </div>
     </DashboardShell>
-  );
-}
-
-function CopyLinkButton({ guideId }: { guideId: string }) {
-  const [copied, setCopied] = useState(false);
-  async function copy() {
-    const url = `${window.location.origin}/result/${guideId}`;
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-  return (
-    <button
-      onClick={copy}
-      className="w-full flex items-center justify-center gap-2 text-sm font-medium py-2.5 rounded-xl border border-neutral-700 text-neutral-300 hover:text-white hover:bg-neutral-800 transition-all"
-    >
-      {copied ? (
-        <>
-          <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-          </svg>
-          Link gekopieerd!
-        </>
-      ) : (
-        <>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-          </svg>
-          Kopieer deel-link
-        </>
-      )}
-    </button>
   );
 }

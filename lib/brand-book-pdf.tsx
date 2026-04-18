@@ -32,12 +32,12 @@ const registeredFonts = new Set<string>();
 async function registerGoogleFont(fontName: string): Promise<boolean> {
   if (registeredFonts.has(fontName)) return true;
   try {
-    // Google Fonts expects spaces as '+' in the family parameter
+    // Google Fonts: spaties als + (beide werken maar + is correct)
     const familyParam = fontName.replace(/\s+/g, "+");
-    const cssUrl = `https://fonts.googleapis.com/css2?family=${familyParam}:ital,wght@0,400;0,700;1,400&display=swap`;
+    // Vraag 400 + 700 op met Firefox UA → retourneert .ttf (react-pdf heeft TTF nodig)
+    const cssUrl = `https://fonts.googleapis.com/css2?family=${familyParam}:wght@400;700&display=swap`;
     const res = await fetch(cssUrl, {
       headers: {
-        // Firefox UA to get TTF instead of WOFF2 (react-pdf needs TTF)
         "User-Agent":
           "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:27.0) Gecko/20100101 Firefox/27.0",
       },
@@ -47,15 +47,14 @@ async function registerGoogleFont(fontName: string): Promise<boolean> {
     const blocks = css.split("@font-face");
     const fonts: { src: string; fontWeight?: number; fontStyle?: "italic" | "normal" }[] = [];
     for (const block of blocks) {
+      // Accepteer zowel .ttf als .woff/.woff2 (browser UA bepaalt wat geretourneerd wordt)
       const urlMatch = block.match(/url\((https:\/\/[^)]+\.(?:ttf|woff2?))\)/);
       const weightMatch = block.match(/font-weight:\s*(\d+)/);
-      const styleMatch = block.match(/font-style:\s*(italic|normal)/);
       if (urlMatch) {
-        const rawStyle = styleMatch?.[1];
         fonts.push({
           src: urlMatch[1],
           fontWeight: weightMatch ? parseInt(weightMatch[1], 10) : 400,
-          fontStyle: rawStyle === "italic" ? "italic" : "normal",
+          fontStyle: "normal",
         });
       }
     }
@@ -498,13 +497,15 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
         <View style={[styles.grid2, { marginTop: 20 }]}>
           <View style={{ flex: 1 }}>
             <View style={[styles.logoBlock, { backgroundColor: primary, minHeight: 150 }]}>
-              {renderLogo("sm", logoPrimaryUri ?? logoWhiteUri)}
+              {/* Altijd wit logo op gekleurde achtergrond */}
+              {renderLogo("sm", logoWhiteUri)}
               <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Op merkkleur</Text>
           </View>
           <View style={{ flex: 1 }}>
             <View style={[styles.logoBlock, { backgroundColor: "#0a0a0a", minHeight: 150 }]}>
+              {/* Altijd wit logo op donkere achtergrond */}
               {renderLogo("sm", logoWhiteUri)}
               <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
             </View>
