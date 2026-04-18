@@ -57,9 +57,10 @@ export async function GET(
     return NextResponse.json({ error: "Logo variant niet beschikbaar" }, { status: 404 });
   }
 
-  // For monoWhite, apply cutout fix on-the-fly so older stored SVGs are also correct
+  // For monoWhite, derive from monoBlack so cutouts are transparent (not white)
   if (variant === "monoWhite") {
-    svgString = recolorSvgToWhite(svgString);
+    const monoBlack = result.logoVariants?.monoBlack;
+    svgString = recolorSvgToWhite(monoBlack && typeof monoBlack === "string" ? monoBlack : svgString);
   }
 
   const safeName = result.companyName
