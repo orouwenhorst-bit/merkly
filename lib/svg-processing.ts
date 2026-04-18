@@ -131,6 +131,31 @@ function recolorSvg(svg: string, targetHex: string): string {
 }
 
 /**
+ * Create a white mono logo: all colored shapes become white, near-white fills
+ * (which are painted cutouts/negative space) become transparent so the
+ * background shows through correctly on dark surfaces.
+ */
+export function recolorSvgToWhite(svg: string): string {
+  const colors = extractFillColors(svg);
+  let result = svg;
+
+  for (const color of colors) {
+    if (isNearWhite(color)) {
+      // Near-white fills are cutout shapes — make transparent
+      result = result
+        .split(`fill="${color.original}"`).join(`fill="none"`)
+        .split(`fill: ${color.original}`).join(`fill: none`)
+        .split(`fill:${color.original}`).join(`fill:none`);
+      continue;
+    }
+    const replacement = formatAs(color.original, "#FFFFFF");
+    result = result.split(color.original).join(replacement);
+  }
+
+  return result;
+}
+
+/**
  * Remove the white background rectangle that Recraft V4 adds.
  * Recraft V4 outputs a full-viewport path as the first element:
  * <path d="M 0 0 L 2048 0 L 2048 2048 L 0 2048 L 0 0 z" fill="rgb(255,255,255)" transform="translate(0,0)"></path>
@@ -198,7 +223,7 @@ export function deriveLogoVariants(
   return {
     fullColor: noBackground,
     monoBlack: recolorSvg(noBackground, "#000000"),
-    monoWhite: recolorSvg(noBackground, "#FFFFFF"),
+    monoWhite: recolorSvgToWhite(noBackground),
     monoPrimary: recolorSvg(noBackground, primaryColor.toUpperCase()),
     transparent: noBackground,
   };
