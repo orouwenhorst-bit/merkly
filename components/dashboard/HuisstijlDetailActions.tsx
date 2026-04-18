@@ -14,13 +14,12 @@ export function LogoDownloadButton({
   variantKey: string;
   canDownload: boolean;
 }) {
-  const [busySvg, setBusySvg] = useState(false);
-  const [busyPng, setBusyPng] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
 
-  async function downloadFormat(format: "svg" | "png") {
-    if (!canDownload) return;
-    const setBusy = format === "svg" ? setBusySvg : setBusyPng;
-    setBusy(true);
+  async function download(format: "svg" | "png") {
+    setOpen(false);
+    setBusy(format);
     try {
       const res = await fetch(
         `/api/guides/${guideId}/download-logo?variant=${variantKey}&format=${format}`
@@ -36,7 +35,7 @@ export function LogoDownloadButton({
     } catch {
       alert("Download mislukt. Probeer het opnieuw.");
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   }
 
@@ -51,31 +50,37 @@ export function LogoDownloadButton({
     );
   }
 
-  const DownIcon = () => (
-    <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-    </svg>
-  );
-
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="relative">
       <button
-        onClick={() => downloadFormat("svg")}
-        disabled={busySvg || busyPng}
-        className="text-[10px] font-semibold text-violet-300 hover:text-violet-200 transition-colors disabled:opacity-50 flex items-center gap-0.5"
+        onClick={() => setOpen((v) => !v)}
+        disabled={!!busy}
+        className="text-[10px] font-semibold text-violet-300 hover:text-violet-200 transition-colors disabled:opacity-50 flex items-center gap-1"
       >
-        <DownIcon />
-        {busySvg ? "..." : "SVG"}
+        <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        {busy ? "..." : "Download"}
       </button>
-      <span className="text-neutral-700 text-[10px]">·</span>
-      <button
-        onClick={() => downloadFormat("png")}
-        disabled={busySvg || busyPng}
-        className="text-[10px] font-semibold text-violet-300 hover:text-violet-200 transition-colors disabled:opacity-50 flex items-center gap-0.5"
-      >
-        <DownIcon />
-        {busyPng ? "..." : "PNG"}
-      </button>
+      {open && (
+        <div className="absolute bottom-full right-0 mb-1.5 bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden shadow-2xl z-20 min-w-[140px]">
+          <button
+            onClick={() => download("svg")}
+            className="flex items-center gap-2 w-full text-left px-3 py-2.5 text-[11px] text-white hover:bg-neutral-700 transition-colors whitespace-nowrap"
+          >
+            <span className="font-semibold">SVG</span>
+            <span className="text-neutral-400">vectorafbeelding</span>
+          </button>
+          <div className="h-px bg-neutral-700" />
+          <button
+            onClick={() => download("png")}
+            className="flex items-center gap-2 w-full text-left px-3 py-2.5 text-[11px] text-white hover:bg-neutral-700 transition-colors whitespace-nowrap"
+          >
+            <span className="font-semibold">PNG</span>
+            <span className="text-neutral-400">512 × 512 px</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

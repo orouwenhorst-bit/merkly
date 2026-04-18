@@ -236,7 +236,9 @@ export default async function HuisstijlDetailPage({
                           className="w-3/4 h-3/4 [&_svg]:w-full [&_svg]:h-full"
                           dangerouslySetInnerHTML={{
                             __html: normalizeSvg(
-                              key === "monoWhite" ? recolorSvgToWhite(svgString) : svgString
+                              key === "monoWhite"
+                                ? recolorSvgToWhite(result.logoVariants?.monoBlack ?? svgString)
+                                : svgString
                             ),
                           }}
                         />
