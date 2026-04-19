@@ -36,6 +36,15 @@ export default async function ResultPage({
   const showClaimBanner = !!user && isUnclaimed;
   const showLoginPrompt = !user && isUnclaimed;
 
+  // Controleer of de ingelogde gebruiker een premium abonnement heeft
+  // én de eigenaar is van deze guide (zodat ze hem premium kunnen maken)
+  let viewerIsPremium = false;
+  if (user && guide.user_id === user.id) {
+    const { getUserSubscription } = await import("@/lib/subscription");
+    const { isPremium: userHasPremium } = await getUserSubscription(user.id);
+    viewerIsPremium = userHasPremium;
+  }
+
   const createdAt = new Date(guide.created_at).toLocaleDateString("nl-NL", {
     day: "numeric",
     month: "long",
@@ -102,7 +111,7 @@ export default async function ResultPage({
           <ShareButton />
         </div>
 
-        <BrandGuidePreview result={result} isPremium={Boolean(guide.is_premium)} guideId={id} />
+        <BrandGuidePreview result={result} isPremium={Boolean(guide.is_premium)} guideId={id} viewerIsPremium={viewerIsPremium} />
       </div>
     </main>
   );
