@@ -1,6 +1,7 @@
 "use client";
 import { BrandGuideResult } from "@/types/brand";
 import { useState, useEffect } from "react";
+import { recolorSvgToWhite } from "@/lib/svg-processing";
 
 interface Props {
   result: BrandGuideResult;
@@ -469,12 +470,11 @@ function PremiumTeaser({ guideId, primary, label }: { guideId: string; primary: 
             </svg>
           </div>
           <p className="font-bold text-neutral-900 text-sm">{label}</p>
-          <p className="text-xs text-neutral-500">Beschikbaar in de premium versie</p>
           <a
             href={`/upgrade?guideId=${guideId}`}
-            className="inline-block text-xs font-semibold px-5 py-2 rounded-lg text-white transition-colors hover:opacity-90"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-5 py-2 rounded-lg text-white transition-colors hover:opacity-90"
             style={{ backgroundColor: primary }}>
-            Ontgrendel &rarr;
+            ✦ Deze stijl premium maken
           </a>
         </div>
       </div>
@@ -745,13 +745,11 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
               </div>
               <div className="bg-neutral-900 rounded-xl p-4 flex items-center justify-center min-h-[100px]">
                 <div className="w-16 h-16 [&_svg]:w-full [&_svg]:h-full"
-                  style={{ filter: "invert(1)" }}
-                  dangerouslySetInnerHTML={{ __html: result.logoVariants.monoBlack ?? result.logoVariants.monoWhite }} />
+                  dangerouslySetInnerHTML={{ __html: recolorSvgToWhite(result.logoVariants.monoBlack ?? result.logoVariants.monoWhite) }} />
               </div>
               <div className="rounded-xl p-4 flex items-center justify-center min-h-[100px]" style={{ backgroundColor: primary }}>
                 <div className="w-16 h-16 [&_svg]:w-full [&_svg]:h-full"
-                  style={{ filter: "invert(1)" }}
-                  dangerouslySetInnerHTML={{ __html: result.logoVariants.monoBlack ?? result.logoVariants.monoWhite }} />
+                  dangerouslySetInnerHTML={{ __html: recolorSvgToWhite(result.logoVariants.monoBlack ?? result.logoVariants.monoWhite) }} />
               </div>
             </div>
             <div className="flex gap-4 mt-2">

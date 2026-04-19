@@ -131,26 +131,45 @@ function recolorSvg(svg: string, targetHex: string): string {
 }
 
 /**
- * Create a white mono logo: all colored shapes become white, near-white fills
- * (which are painted cutouts/negative space) become transparent so the
- * background shows through correctly on dark surfaces.
+ * Return true if a fill value string represents white or near-white.
+ * Handles named colors, shorthand hex, full hex, and rgb().
+ */
+function isNearWhiteString(s: string): boolean {
+  const lower = s.trim().toLowerCase();
+  if (lower === "white" || lower === "#fff" || lower === "#ffffff") return true;
+  const parsed = parseColor(s);
+  return parsed ? isNearWhite(parsed) : false;
+}
+
+/**
+ * Create a white mono logo using regex-based recoloring.
+ * - Near-white / white fills → fill="none"  (transparent cutouts)
+ * - All other fills          → fill="#ffffff" (white logo shapes)
+ * Works with any fill format: hex (#000 / #000000), rgb(), named colors.
  */
 export function recolorSvgToWhite(svg: string): string {
-  const colors = extractFillColors(svg);
-  let result = svg;
-
-  for (const color of colors) {
-    if (isNearWhite(color)) {
-      // Near-white fills are cutout shapes — make transparent
-      result = result
-        .split(`fill="${color.original}"`).join(`fill="none"`)
-        .split(`fill: ${color.original}`).join(`fill: none`)
-        .split(`fill:${color.original}`).join(`fill:none`);
-      continue;
+  // Replace fill="..." attributes
+  let result = svg.replace(
+    /\bfill="([^"]*)"/g,
+    (_, value: string) => {
+      if (value === "none" || value === "currentColor" || value === "inherit" || value.startsWith("url(")) {
+        return `fill="${value}"`;
+      }
+      return isNearWhiteString(value) ? 'fill="none"' : 'fill="#ffffff"';
     }
-    const replacement = formatAs(color.original, "#FFFFFF");
-    result = result.split(color.original).join(replacement);
-  }
+  );
+
+  // Replace fill: ... in inline styles (attributes and <style> blocks)
+  result = result.replace(
+    /\bfill\s*:\s*([^;}"]+)/g,
+    (_, value: string) => {
+      const v = value.trim();
+      if (v === "none" || v === "currentColor" || v === "inherit" || v.startsWith("url(")) {
+        return `fill: ${v}`;
+      }
+      return isNearWhiteString(v) ? "fill: none" : "fill: #ffffff";
+    }
+  );
 
   return result;
 }

@@ -11,6 +11,7 @@ import {
   CopyLinkButton,
   FontLoader,
 } from "@/components/dashboard/HuisstijlDetailActions";
+import { recolorSvgToWhite } from "@/lib/svg-processing";
 import type { BrandGuideResult } from "@/types/brand";
 
 export const dynamic = "force-dynamic";
@@ -222,10 +223,10 @@ export default async function HuisstijlDetailPage({
                       key as keyof typeof result.logoVariants
                     ];
                   if (!svgString || typeof svgString !== "string") return null;
-                  // For monoWhite: render monoBlack with CSS invert — reliable on any SVG structure
+                  // For monoWhite: recolor monoBlack to white fills with transparent cutouts
                   const displaySvg =
                     key === "monoWhite"
-                      ? (result.logoVariants?.monoBlack ?? svgString)
+                      ? recolorSvgToWhite(result.logoVariants?.monoBlack ?? svgString)
                       : svgString;
 
                   return (
@@ -240,7 +241,6 @@ export default async function HuisstijlDetailPage({
                       >
                         <div
                           className="w-full h-full [&_svg]:w-full [&_svg]:h-full"
-                          style={key === "monoWhite" ? { filter: "invert(1)" } : undefined}
                           dangerouslySetInnerHTML={{ __html: normalizeSvg(displaySvg) }}
                         />
                       </div>
