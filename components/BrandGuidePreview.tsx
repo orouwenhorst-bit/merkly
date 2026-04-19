@@ -7,6 +7,8 @@ interface Props {
   result: BrandGuideResult;
   isPremium: boolean;
   guideId: string;
+  /** True when the viewer has an active premium subscription (but this guide may still be free) */
+  viewerIsPremium?: boolean;
 }
 
 /* ── Helpers ── */
@@ -470,11 +472,12 @@ function PremiumTeaser({ guideId, primary, label }: { guideId: string; primary: 
             </svg>
           </div>
           <p className="font-bold text-neutral-900 text-sm">{label}</p>
+          <p className="text-xs text-neutral-500">Beschikbaar in de premium versie</p>
           <a
             href={`/upgrade?guideId=${guideId}`}
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-5 py-2 rounded-lg text-white transition-colors hover:opacity-90"
             style={{ backgroundColor: primary }}>
-            ✦ Deze stijl premium maken
+            Ontgrendel &rarr;
           </a>
         </div>
       </div>
@@ -484,9 +487,10 @@ function PremiumTeaser({ guideId, primary, label }: { guideId: string; primary: 
 
 /* ── Main Component ── */
 
-export default function BrandGuidePreview({ result, isPremium, guideId }: Props) {
+export default function BrandGuidePreview({ result, isPremium, guideId, viewerIsPremium }: Props) {
   const [downloading, setDownloading] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [makingPremium, setMakingPremium] = useState(false);
   const colors = getColors(result);
   const { primary: primaryColors, secondary: secondaryColors, neutral: neutralColors } = getColorsByCategory(result);
   const primary = primaryColors[0]?.hex ?? colors[0]?.hex ?? "#000";
@@ -531,8 +535,44 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
     } finally { setDownloading(false); }
   }
 
+  async function handleMakePremium() {
+    setMakingPremium(true);
+    try {
+      const res = await fetch(`/api/guides/${guideId}/make-premium`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      window.location.reload();
+    } catch {
+      alert("Er ging iets mis. Probeer het opnieuw.");
+      setMakingPremium(false);
+    }
+  }
+
   return (
     <div className={`space-y-16 ${fontsLoaded ? "fonts-loaded" : ""}`}>
+
+      {/* ── MAAK PREMIUM BANNER (premium abonnee, gratis stijl) ── */}
+      {viewerIsPremium && !isPremium && (
+        <div className="rounded-2xl border border-violet-200 bg-violet-50 p-5 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full flex items-center justify-center bg-violet-100 shrink-0">
+              <svg className="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-violet-900">Je hebt premium</p>
+              <p className="text-xs text-violet-600">Genereer de premium versie van deze stijl om alle secties te bekijken en te downloaden.</p>
+            </div>
+          </div>
+          <button
+            onClick={handleMakePremium}
+            disabled={makingPremium}
+            className="shrink-0 text-sm font-semibold bg-violet-600 text-white hover:bg-violet-500 px-5 py-2.5 rounded-xl transition-colors disabled:opacity-50 whitespace-nowrap"
+          >
+            {makingPremium ? "Bezig..." : "Maak Premium ✦"}
+          </button>
+        </div>
+      )}
 
       {/* ── HERO BANNER ── */}
       <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: primary }}>
