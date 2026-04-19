@@ -1,7 +1,6 @@
 "use client";
 import { BrandGuideResult } from "@/types/brand";
 import { useState, useEffect } from "react";
-import { recolorSvgToWhite } from "@/lib/svg-processing";
 
 interface Props {
   result: BrandGuideResult;
@@ -746,11 +745,13 @@ export default function BrandGuidePreview({ result, isPremium, guideId }: Props)
               </div>
               <div className="bg-neutral-900 rounded-xl p-4 flex items-center justify-center min-h-[100px]">
                 <div className="w-16 h-16 [&_svg]:w-full [&_svg]:h-full"
-                  dangerouslySetInnerHTML={{ __html: recolorSvgToWhite(result.logoVariants.monoBlack ?? result.logoVariants.monoWhite) }} />
+                  style={{ filter: "invert(1)" }}
+                  dangerouslySetInnerHTML={{ __html: result.logoVariants.monoBlack ?? result.logoVariants.monoWhite }} />
               </div>
               <div className="rounded-xl p-4 flex items-center justify-center min-h-[100px]" style={{ backgroundColor: primary }}>
                 <div className="w-16 h-16 [&_svg]:w-full [&_svg]:h-full"
-                  dangerouslySetInnerHTML={{ __html: recolorSvgToWhite(result.logoVariants.monoBlack ?? result.logoVariants.monoWhite) }} />
+                  style={{ filter: "invert(1)" }}
+                  dangerouslySetInnerHTML={{ __html: result.logoVariants.monoBlack ?? result.logoVariants.monoWhite }} />
               </div>
             </div>
             <div className="flex gap-4 mt-2">

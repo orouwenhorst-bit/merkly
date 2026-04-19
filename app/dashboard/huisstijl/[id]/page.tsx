@@ -11,7 +11,6 @@ import {
   CopyLinkButton,
   FontLoader,
 } from "@/components/dashboard/HuisstijlDetailActions";
-import { recolorSvgToWhite } from "@/lib/svg-processing";
 import type { BrandGuideResult } from "@/types/brand";
 
 export const dynamic = "force-dynamic";
@@ -223,30 +222,30 @@ export default async function HuisstijlDetailPage({
                       key as keyof typeof result.logoVariants
                     ];
                   if (!svgString || typeof svgString !== "string") return null;
+                  // For monoWhite: render monoBlack with CSS invert — reliable on any SVG structure
+                  const displaySvg =
+                    key === "monoWhite"
+                      ? (result.logoVariants?.monoBlack ?? svgString)
+                      : svgString;
+
                   return (
                     <div
                       key={key}
-                      className="group relative rounded-xl border border-neutral-800 overflow-hidden flex flex-col"
+                      className="group relative rounded-xl border border-neutral-800 flex flex-col"
                     >
+                      {/* Preview — overflow-hidden only here to keep rounded corners */}
                       <div
-                        className="aspect-square flex items-center justify-center p-4"
-                        style={{ background: bg }}
+                        className="aspect-square rounded-t-xl overflow-hidden"
+                        style={{ background: bg, padding: "20%" }}
                       >
                         <div
-                          className="w-3/4 h-3/4 [&_svg]:w-full [&_svg]:h-full"
-                          dangerouslySetInnerHTML={{
-                            __html: normalizeSvg(
-                              key === "monoWhite"
-                                ? recolorSvgToWhite(result.logoVariants?.monoBlack ?? svgString)
-                                : svgString
-                            ),
-                          }}
+                          className="w-full h-full [&_svg]:w-full [&_svg]:h-full"
+                          style={key === "monoWhite" ? { filter: "invert(1)" } : undefined}
+                          dangerouslySetInnerHTML={{ __html: normalizeSvg(displaySvg) }}
                         />
                       </div>
-                      <div className="p-2.5 bg-neutral-900 border-t border-neutral-800 flex items-center justify-between gap-2">
-                        <span className="text-[10px] text-neutral-400 truncate">
-                          {label}
-                        </span>
+                      {/* Bottom bar — relative so dropdown opens upward freely */}
+                      <div className="p-2.5 bg-neutral-900 border-t border-neutral-800 rounded-b-xl flex items-center justify-end relative">
                         <LogoDownloadButton
                           guideId={guide.id}
                           variantKey={key}
