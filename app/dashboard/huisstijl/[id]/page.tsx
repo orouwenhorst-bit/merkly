@@ -10,6 +10,8 @@ import {
   CopyHexButton,
   CopyLinkButton,
   FontLoader,
+  SloganCycler,
+  LogoRegenerateButton,
 } from "@/components/dashboard/HuisstijlDetailActions";
 import { recolorSvgToWhite } from "@/lib/svg-processing";
 import type { BrandGuideResult } from "@/types/brand";
@@ -144,11 +146,11 @@ export default async function HuisstijlDetailPage({
             {guide.industry && (
               <p className="text-neutral-500 text-sm mt-1">{guide.industry}</p>
             )}
-            {result?.toneOfVoice?.tagline && (
-              <p className="text-neutral-400 text-sm mt-1 italic">
-                &ldquo;{result.toneOfVoice.tagline}&rdquo;
-              </p>
-            )}
+            <SloganCycler
+              guideId={guide.id}
+              isPremiumUser={isPremiumUser}
+              initialTagline={result?.toneOfVoice?.tagline ?? ""}
+            />
           </div>
         </div>
 
@@ -207,14 +209,20 @@ export default async function HuisstijlDetailPage({
                 <h2 className="text-base font-semibold text-white">
                   Logo-varianten
                 </h2>
-                {!canDownload && (
-                  <span className="text-xs text-neutral-500 flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    Downloads vereisen Premium
-                  </span>
-                )}
+                <div className="flex items-center gap-3">
+                  <LogoRegenerateButton
+                    guideId={guide.id}
+                    isPremiumUser={isPremiumUser}
+                  />
+                  {!canDownload && (
+                    <span className="text-xs text-neutral-500 flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      Downloads vereisen Premium
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                 {LOGO_VARIANTS.map(({ key, label, bg }) => {

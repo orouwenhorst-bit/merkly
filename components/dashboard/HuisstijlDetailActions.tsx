@@ -274,6 +274,204 @@ export function CopyLinkButton({ guideId }: { guideId: string }) {
   );
 }
 
+/* ── Slogan cycler (premium) ── */
+export function SloganCycler({
+  guideId,
+  isPremiumUser,
+  initialTagline,
+}: {
+  guideId: string;
+  isPremiumUser: boolean;
+  initialTagline: string;
+}) {
+  const router = useRouter();
+  const [phase, setPhase] = useState<"idle" | "loading" | "cycling" | "saving">("idle");
+  const [slogans, setSlogans] = useState<string[]>([]);
+  const [index, setIndex] = useState(0);
+  const [activeTagline, setActiveTagline] = useState(initialTagline);
+
+  async function generate() {
+    setPhase("loading");
+    try {
+      const res = await fetch(`/api/guides/${guideId}/regenerate-slogans`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      const { slogans: list } = await res.json();
+      setSlogans(list);
+      setIndex(0);
+      setPhase("cycling");
+    } catch {
+      alert("Slogans genereren mislukt. Probeer het opnieuw.");
+      setPhase("idle");
+    }
+  }
+
+  async function applySlogan(tagline: string) {
+    setPhase("saving");
+    try {
+      const res = await fetch(`/api/guides/${guideId}/apply-slogan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tagline }),
+      });
+      if (!res.ok) throw new Error();
+      setActiveTagline(tagline);
+      setPhase("idle");
+      router.refresh();
+    } catch {
+      alert("Opslaan mislukt. Probeer het opnieuw.");
+      setPhase("cycling");
+    }
+  }
+
+  if (!isPremiumUser) {
+    return (
+      <div className="flex items-center gap-2 mt-1">
+        {activeTagline && (
+          <p className="text-neutral-400 text-sm italic">
+            &ldquo;{activeTagline}&rdquo;
+          </p>
+        )}
+        <a
+          href="/upgrade"
+          className="inline-flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 border border-violet-500/30 rounded-full px-2 py-0.5 transition-colors shrink-0"
+        >
+          ✦ Slogan aanpassen
+        </a>
+      </div>
+    );
+  }
+
+  if (phase === "cycling" && slogans.length > 0) {
+    return (
+      <div className="mt-2 bg-neutral-900 border border-violet-500/30 rounded-xl p-3 space-y-3">
+        <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">
+          Slogan {index + 1} van {slogans.length}
+        </p>
+        <p className="text-white text-sm font-medium italic">
+          &ldquo;{slogans[index]}&rdquo;
+        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => setIndex((i) => (i - 1 + slogans.length) % slogans.length)}
+            className="text-[11px] text-neutral-400 hover:text-white border border-neutral-700 hover:border-neutral-600 rounded-lg px-2.5 py-1.5 transition-colors"
+          >
+            ← Vorige
+          </button>
+          <button
+            onClick={() => setIndex((i) => (i + 1) % slogans.length)}
+            className="text-[11px] text-neutral-400 hover:text-white border border-neutral-700 hover:border-neutral-600 rounded-lg px-2.5 py-1.5 transition-colors"
+          >
+            Volgende →
+          </button>
+          <button
+            onClick={() => applySlogan(slogans[index])}
+            className="text-[11px] font-semibold bg-violet-600 hover:bg-violet-500 text-white rounded-lg px-3 py-1.5 transition-colors"
+          >
+            Gebruik deze ✓
+          </button>
+          <button
+            onClick={() => setPhase("idle")}
+            className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors ml-auto"
+          >
+            Annuleren
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 mt-1 flex-wrap">
+      {activeTagline && (
+        <p className="text-neutral-400 text-sm italic">
+          &ldquo;{activeTagline}&rdquo;
+        </p>
+      )}
+      <button
+        onClick={generate}
+        disabled={phase === "loading" || phase === "saving"}
+        className="inline-flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 border border-violet-500/30 hover:border-violet-400/50 rounded-full px-2 py-0.5 transition-colors disabled:opacity-50 shrink-0"
+      >
+        {phase === "loading" ? (
+          <>
+            <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Genereren...
+          </>
+        ) : phase === "saving" ? (
+          <>
+            <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Opslaan...
+          </>
+        ) : (
+          <>↻ Nieuwe slogans</>
+        )}
+      </button>
+    </div>
+  );
+}
+
+/* ── Logo regenereer knop (premium) ── */
+export function LogoRegenerateButton({
+  guideId,
+  isPremiumUser,
+}: {
+  guideId: string;
+  isPremiumUser: boolean;
+}) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  async function regenerate() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/guides/${guideId}/regenerate-logo`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      router.refresh();
+    } catch {
+      alert("Logo genereren mislukt. Probeer het opnieuw.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!isPremiumUser) {
+    return (
+      <a
+        href="/upgrade"
+        className="inline-flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 border border-violet-500/30 rounded-full px-2.5 py-1 transition-colors"
+      >
+        ✦ Nieuw logo
+      </a>
+    );
+  }
+
+  return (
+    <button
+      onClick={regenerate}
+      disabled={loading}
+      className="inline-flex items-center gap-1.5 text-[11px] font-medium text-violet-300 hover:text-violet-200 border border-violet-500/30 hover:border-violet-400/50 rounded-full px-2.5 py-1 transition-colors disabled:opacity-50"
+    >
+      {loading ? (
+        <>
+          <svg className="w-3 h-3 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Genereren...
+        </>
+      ) : (
+        <>↻ Nieuw logo</>
+      )}
+    </button>
+  );
+}
+
 /* ── Google Fonts loader ── */
 export function FontLoader({ url }: { url: string }) {
   useEffect(() => {
