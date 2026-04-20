@@ -787,9 +787,9 @@ export default function BrandGuidePreview({ result, isPremium, guideId, viewerIs
                 <div className="w-16 h-16 [&_svg]:w-full [&_svg]:h-full"
                   dangerouslySetInnerHTML={{ __html: recolorSvgToWhite(result.logoVariants.monoBlack ?? result.logoVariants.monoWhite) }} />
               </div>
-              <div className="rounded-xl p-4 flex items-center justify-center min-h-[100px]" style={{ backgroundColor: primary }}>
+              <div className="bg-neutral-100 border border-neutral-200 rounded-xl p-4 flex items-center justify-center min-h-[100px]">
                 <div className="w-16 h-16 [&_svg]:w-full [&_svg]:h-full"
-                  dangerouslySetInnerHTML={{ __html: recolorSvgToWhite(result.logoVariants.monoBlack ?? result.logoVariants.monoWhite) }} />
+                  dangerouslySetInnerHTML={{ __html: result.logoVariants.monoPrimary ?? result.logoVariants.fullColor }} />
               </div>
             </div>
             <div className="flex gap-4 mt-2">
