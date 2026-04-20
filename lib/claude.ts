@@ -101,8 +101,6 @@ Retourneer ALLEEN geldige JSON:
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 4000,
-    // Disable adaptive thinking — we need deterministic JSON output within token budget
-    thinking: { type: "disabled" } as never,
     messages: [{ role: "user", content: lightPrompt }],
   });
 
@@ -392,8 +390,6 @@ Schrijf alles in het Nederlands. Retourneer ALLEEN geldige JSON, geen markdown.
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 12000,
-    // Disable adaptive thinking — we need deterministic JSON output within token budget
-    thinking: { type: "disabled" } as never,
     messages: [{ role: "user", content: prompt }],
   });
 
