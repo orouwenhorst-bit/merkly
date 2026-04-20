@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, createServiceClient } from "@/lib/supabase";
 import { getUserSubscription } from "@/lib/subscription";
-import { generateLogoSvg, storeLogoSvg } from "@/lib/recraft-logo";
+import { generateLogoSvg } from "@/lib/recraft-logo";
 import { deriveLogoVariants } from "@/lib/svg-processing";
 import type { BrandGuideResult } from "@/types/brand";
 
@@ -54,12 +54,11 @@ export async function POST(
     const brandPersonality =
       result.strategy?.personalityTraits ?? result.brandPersonality ?? [];
 
-    if (!process.env.RECRAFT_API_KEY) {
+    if (!process.env.RECRAFT_API_KEY)
       return NextResponse.json(
         { error: "Logo generatie niet beschikbaar" },
         { status: 503 }
       );
-    }
 
     const v4Result = await generateLogoSvg(
       guide.industry,
@@ -76,21 +75,18 @@ export async function POST(
 
     const variants = deriveLogoVariants(v4Result.svg, primaryColor);
     const primarySvg = variants.monoPrimary;
-    const publicUrl = await storeLogoSvg(id, primarySvg);
 
-    result.logoImageUrl = publicUrl ?? undefined;
-    result.logoVariants = {
-      fullColor: primarySvg,
-      monoBlack: variants.monoBlack,
-      monoWhite: variants.monoWhite,
-      monoPrimary: variants.monoPrimary,
-      transparent: primarySvg,
-      recraftImageId: v4Result.imageId,
-    };
-
-    await supabase.from("brand_guides").update({ result }).eq("id", id);
-
-    return NextResponse.json({ ok: true });
+    // Return variants without saving — client picks old or new via apply-logo
+    return NextResponse.json({
+      logoVariants: {
+        fullColor: primarySvg,
+        monoBlack: variants.monoBlack,
+        monoWhite: variants.monoWhite,
+        monoPrimary: variants.monoPrimary,
+        transparent: primarySvg,
+        recraftImageId: v4Result.imageId,
+      },
+    });
   } catch (err) {
     console.error("regenerate-logo error:", err);
     return NextResponse.json({ error: "Er ging iets mis" }, { status: 500 });

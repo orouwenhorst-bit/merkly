@@ -416,27 +416,69 @@ export function SloganCycler({
   );
 }
 
-/* ── Logo regenereer knop (premium) ── */
+type LogoVariants = {
+  fullColor: string;
+  monoBlack: string;
+  monoWhite: string;
+  monoPrimary: string;
+  transparent: string;
+  recraftImageId?: string;
+};
+
+function normalizeSvgClient(svg: string): string {
+  return svg.replace(/<svg([^>]*)>/, (_, attrs) => {
+    const cleaned = attrs
+      .replace(/\s+width="[^"]*"/g, "")
+      .replace(/\s+height="[^"]*"/g, "")
+      .replace(/\s+style="[^"]*"/g, "");
+    return `<svg${cleaned} style="width:100%;height:100%;display:block;">`;
+  });
+}
+
+/* ── Logo regenereer knop met vergelijking (premium) ── */
 export function LogoRegenerateButton({
   guideId,
   isPremiumUser,
+  currentLogoVariants,
 }: {
   guideId: string;
   isPremiumUser: boolean;
+  currentLogoVariants: LogoVariants | null;
 }) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "loading" | "comparing">("idle");
+  const [saving, setSaving] = useState(false);
+  const [newVariants, setNewVariants] = useState<LogoVariants | null>(null);
 
-  async function regenerate() {
-    setLoading(true);
+  async function generate() {
+    setPhase("loading");
     try {
       const res = await fetch(`/api/guides/${guideId}/regenerate-logo`, { method: "POST" });
       if (!res.ok) throw new Error();
-      router.refresh();
+      const { logoVariants } = await res.json();
+      setNewVariants(logoVariants);
+      setPhase("comparing");
     } catch {
       alert("Logo genereren mislukt. Probeer het opnieuw.");
+      setPhase("idle");
+    }
+  }
+
+  async function applyLogo(variants: LogoVariants) {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/guides/${guideId}/apply-logo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logoVariants: variants }),
+      });
+      if (!res.ok) throw new Error();
+      setPhase("idle");
+      router.refresh();
+    } catch {
+      alert("Opslaan mislukt. Probeer het opnieuw.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
@@ -451,13 +493,84 @@ export function LogoRegenerateButton({
     );
   }
 
+  if (phase === "comparing" && newVariants) {
+    return (
+      <div className="mt-4 bg-neutral-900 border border-violet-500/30 rounded-xl p-4 space-y-4">
+        <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">
+          Kies je logo
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          {/* Huidig logo */}
+          <div className="space-y-2">
+            <p className="text-[10px] text-neutral-500 text-center">Huidig</p>
+            <div className="rounded-xl border border-neutral-700 bg-white overflow-hidden aspect-square flex items-center justify-center p-6">
+              {currentLogoVariants?.fullColor ? (
+                <div
+                  className="w-full h-full [&_svg]:w-full [&_svg]:h-full"
+                  dangerouslySetInnerHTML={{
+                    __html: normalizeSvgClient(currentLogoVariants.fullColor),
+                  }}
+                />
+              ) : (
+                <span className="text-neutral-300 text-xs">Geen logo</span>
+              )}
+            </div>
+            <button
+              onClick={() => currentLogoVariants && applyLogo(currentLogoVariants)}
+              disabled={saving || !currentLogoVariants}
+              className="w-full text-[11px] font-medium text-neutral-300 hover:text-white border border-neutral-700 hover:border-neutral-600 rounded-lg py-2 transition-colors disabled:opacity-40"
+            >
+              Behoud huidig
+            </button>
+          </div>
+
+          {/* Nieuw logo */}
+          <div className="space-y-2">
+            <p className="text-[10px] text-violet-400 text-center font-semibold">Nieuw ✦</p>
+            <div className="rounded-xl border border-violet-500/40 bg-white overflow-hidden aspect-square flex items-center justify-center p-6">
+              <div
+                className="w-full h-full [&_svg]:w-full [&_svg]:h-full"
+                dangerouslySetInnerHTML={{
+                  __html: normalizeSvgClient(newVariants.fullColor),
+                }}
+              />
+            </div>
+            <button
+              onClick={() => applyLogo(newVariants)}
+              disabled={saving}
+              className="w-full text-[11px] font-semibold bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-2 transition-colors disabled:opacity-50"
+            >
+              {saving ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Opslaan...
+                </span>
+              ) : (
+                "Gebruik nieuw ✓"
+              )}
+            </button>
+          </div>
+        </div>
+        <button
+          onClick={() => setPhase("idle")}
+          className="text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors w-full text-center"
+        >
+          Annuleren
+        </button>
+      </div>
+    );
+  }
+
   return (
     <button
-      onClick={regenerate}
-      disabled={loading}
+      onClick={generate}
+      disabled={phase === "loading"}
       className="inline-flex items-center gap-1.5 text-[11px] font-medium text-violet-300 hover:text-violet-200 border border-violet-500/30 hover:border-violet-400/50 rounded-full px-2.5 py-1 transition-colors disabled:opacity-50"
     >
-      {loading ? (
+      {phase === "loading" ? (
         <>
           <svg className="w-3 h-3 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

@@ -213,6 +213,7 @@ export default async function HuisstijlDetailPage({
                   <LogoRegenerateButton
                     guideId={guide.id}
                     isPremiumUser={isPremiumUser}
+                    currentLogoVariants={result?.logoVariants ?? null}
                   />
                   {!canDownload && (
                     <span className="text-xs text-neutral-500 flex items-center gap-1">
