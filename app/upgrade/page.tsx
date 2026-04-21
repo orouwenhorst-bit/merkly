@@ -17,7 +17,9 @@ const FEATURES_PREMIUM = [
   "Onbeperkt genereren",
   "Volledige brand guide direct (geen wachten)",
   "Download als PDF (11 pagina's)",
-  "AI-gegenereerd logo (SVG/PNG)",
+  "AI-logo SVG/PNG — 5 varianten",
+  "Onbeperkt logo regenereren",
+  "Slogans regenereren & bewaren",
   "Mockups — visitekaartje, social media",
   "Voorbeeldteksten & brand voice",
   "WCAG kleurcontrast-check",
@@ -156,6 +158,13 @@ function UpgradeInner() {
 
             <p className="text-[11px] text-neutral-500 mt-3 text-center">
               Beveiligde betaling via Stripe · iDEAL & creditcard
+            </p>
+            <p className="text-[11px] text-neutral-400 mt-2 text-center leading-relaxed">
+              Je hebt 14 dagen herroepingsrecht. Door direct na aankoop de dienst te gebruiken
+              doe je afstand van dit recht voor reeds geleverde digitale content (art. 6:230p BW).{" "}
+              <a href="/voorwaarden#herroeping" className="underline underline-offset-2 hover:text-neutral-300 transition-colors">
+                Meer info
+              </a>
             </p>
           </div>
         </div>

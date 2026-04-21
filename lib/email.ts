@@ -133,7 +133,7 @@ export async function sendPremiumEmail(email: string, name?: string) {
     </a>
 
     <p style="margin:28px 0 0;font-size:13px;color:#555;line-height:1.6;">
-      Je kunt je abonnement op elk moment opzeggen via je <a href="https://www.merkly.nl/upgrade" style="color:#a78bfa;text-decoration:none;">accountinstellingen</a>.
+      Je kunt je abonnement op elk moment opzeggen via je <a href="https://www.merkly.nl/dashboard/account" style="color:#a78bfa;text-decoration:none;">accountinstellingen</a>.
     </p>
   `);
 

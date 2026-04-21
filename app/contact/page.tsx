@@ -55,11 +55,18 @@ export default function ContactPage() {
         <p>
           Merkly
           <br />
-          KvK-nummer: <span className="text-neutral-500">(volgt bij registratie)</span>
+          Eenmanszaak
           <br />
-          BTW-nummer: <span className="text-neutral-500">(volgt bij registratie)</span>
+          Lokomotiefstraat 14
           <br />
-          Gevestigd in Nederland
+          7331 AC Apeldoorn
+          <br />
+          Nederland
+          <br />
+          <br />
+          KvK-nummer: 98654500
+          <br />
+          Btw-nummer: NL005346485B13
         </p>
       </LegalSection>
     </LegalLayout>

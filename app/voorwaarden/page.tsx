@@ -88,7 +88,7 @@ export default function TermsPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="6. Herroepingsrecht">
+      <LegalSection heading="6. Herroepingsrecht" id="herroeping">
         <p>
           Als consument heb je 14 dagen herroepingsrecht na het afsluiten van een Premium-abonnement.
           Door direct na aankoop de digitale dienst te gebruiken (zoals het genereren van brand
@@ -138,11 +138,28 @@ export default function TermsPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="11. Toepasselijk recht">
+      <LegalSection heading="11. Toepasselijk recht en geschillen">
         <p>
           Op deze voorwaarden is Nederlands recht van toepassing. Geschillen worden voorgelegd aan
           de bevoegde rechter in het arrondissement waar Merkly is gevestigd, tenzij de wet
           dwingend anders bepaalt.
+        </p>
+        <p>
+          Als consument kun je ook gebruikmaken van het Europese platform voor online
+          geschillenbeslechting (ODR). Dit platform is te vinden op{" "}
+          <a
+            href="https://ec.europa.eu/consumers/odr"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-violet-400 hover:text-violet-300"
+          >
+            ec.europa.eu/consumers/odr
+          </a>
+          . Ons e-mailadres voor dit doel is{" "}
+          <a href="mailto:info@merkly.nl" className="text-violet-400 hover:text-violet-300">
+            info@merkly.nl
+          </a>
+          .
         </p>
       </LegalSection>
     </LegalLayout>

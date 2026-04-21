@@ -63,13 +63,15 @@ export function LegalLayout({
 
 export function LegalSection({
   heading,
+  id,
   children,
 }: {
   heading: string;
+  id?: string;
   children: ReactNode;
 }) {
   return (
-    <section>
+    <section id={id} className="scroll-mt-28">
       <h2 className="text-xl font-semibold text-white mb-3">{heading}</h2>
       <div className="space-y-3 text-neutral-400">{children}</div>
     </section>

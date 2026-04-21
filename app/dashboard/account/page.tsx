@@ -77,7 +77,7 @@ export default async function AccountPage() {
             <Row label="E-mailadres" value={user.email ?? "—"} />
             <Row
               label="Inlogmethode"
-              value={provider === "google" ? "Google" : "E-mail link"}
+              value={provider === "google" ? "Google" : "E-mail & wachtwoord"}
             />
             <Row label="Lid sinds" value={memberSince} />
             <Row label="Huisstijlen gegenereerd" value={String(count ?? 0)} />

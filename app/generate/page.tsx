@@ -148,7 +148,7 @@ function ProgressOverlay({ companyName, done }: { companyName: string; done: boo
 
         <p className="text-xs text-neutral-600 pt-4">
           Dit duurt ongeveer 30 seconden. Je brand guide bevat kleuren, typografie,
-          merkverhaal, logo en mockups.
+          merkverhaal, merkpersoonlijkheid en meer.
         </p>
       </div>
     </div>
@@ -192,7 +192,7 @@ export default function GeneratePage() {
       } catch (err) {
         console.error("Generate error:", err);
         setLoading(false);
-        setError("Er ging iets mis bij het genereren. Probeer het opnieuw.");
+        setError(err instanceof Error ? err.message : "Er ging iets mis bij het genereren. Probeer het opnieuw.");
       }
     },
     [form, router]
@@ -409,7 +409,7 @@ export default function GeneratePage() {
             </button>
 
             <p className="text-xs text-neutral-600 text-center">
-              Je ontvangt: kleurenpalet · typografie · logo · merkverhaal · mockups · brand voice copy
+              Je ontvangt: kleurenpalet · typografie · merkverhaal · merkpersoonlijkheid · tone of voice
             </p>
           </form>
         </div>
