@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateBrandGuideLight, generateBrandGuide } from "@/lib/claude";
-import { generateAndStoreLogo } from "@/lib/dalle-logo";
-import { generateLogoSvg, storeLogoSvg } from "@/lib/recraft-logo";
-import { deriveLogoVariants } from "@/lib/svg-processing";
 import { calculateAccessibility } from "@/lib/wcag";
 import { createClient, createServerClient } from "@/lib/supabase";
 import { getUserSubscription } from "@/lib/subscription";
 import { BrandInput } from "@/types/brand";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 60; // Vercel Hobby plan maximum
 
 function label(step: string, err: unknown): Error {
   const msg = err instanceof Error ? err.message : String(err);
@@ -110,57 +107,8 @@ export async function POST(req: NextRequest) {
       throw label("supabase-insert", err);
     }
 
-    // Logo generatie
-    if (process.env.RECRAFT_API_KEY) {
-      try {
-        const colors = result.colorPalette?.colors ?? [];
-        const primaryColor =
-          body.preferredColor ||
-          colors.find((c) => c.category === "primary")?.hex ||
-          colors[0]?.hex ||
-          "#000000";
-
-        const v4Result = await generateLogoSvg(
-          body.industry,
-          body.mood,
-          primaryColor,
-          result.brandPersonality ?? []
-        );
-
-        if (v4Result) {
-          const variants = deriveLogoVariants(v4Result.svg, primaryColor);
-          const primarySvg = variants.monoPrimary;
-          const publicUrl = await storeLogoSvg(savedGuide.id, primarySvg);
-          result.logoImageUrl = publicUrl ?? undefined;
-          result.iconSvg = undefined;
-          result.logoVariants = {
-            fullColor: primarySvg,
-            monoBlack: variants.monoBlack,
-            monoWhite: variants.monoWhite,
-            monoPrimary: variants.monoPrimary,
-            transparent: primarySvg,
-            recraftImageId: v4Result.imageId,
-          };
-          await supabase.from("brand_guides").update({ result }).eq("id", savedGuide.id);
-        } else {
-          const logoImageUrl = await generateAndStoreLogo(
-            savedGuide.id,
-            body.companyName,
-            body.industry,
-            body.mood,
-            primaryColor
-          );
-          if (logoImageUrl) {
-            result.logoImageUrl = logoImageUrl;
-            result.iconSvg = undefined;
-            await supabase.from("brand_guides").update({ result }).eq("id", savedGuide.id);
-          }
-        }
-      } catch (err) {
-        // Logo is niet-kritiek: log maar laat generatie slagen
-        console.error("Logo generatie fout (niet-kritiek):", err);
-      }
-    }
+    // Logo generatie via apart endpoint na redirect — voorkomt Vercel 60s timeout op Hobby plan
+    // De result-pagina triggert /api/guides/[id]/regenerate-logo zodra de guide geladen is.
 
     return NextResponse.json({ id: savedGuide.id, result });
   } catch (err) {
