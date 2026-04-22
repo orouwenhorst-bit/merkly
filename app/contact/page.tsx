@@ -13,7 +13,7 @@ export default function ContactPage() {
     <LegalLayout title="Contact" lastUpdated="8 april 2026">
       <p>
         We horen graag van je. Of je nu een vraag hebt over je brand guide, een probleem wilt
-        melden, of gewoon feedback wilt delen — je bent welkom.
+        melden, of gewoon feedback wilt delen: je bent welkom.
       </p>
 
       <LegalSection heading="Algemene vragen">
