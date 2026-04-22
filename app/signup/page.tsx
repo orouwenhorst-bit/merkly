@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import AuthForm from "@/components/auth/AuthForm";
 
 export const metadata = {
-  title: "Account aanmaken — Merkly",
+  title: "Account aanmaken | Merkly",
   description: "Maak gratis een Merkly-account en start direct met het genereren van je huisstijl.",
 };
 

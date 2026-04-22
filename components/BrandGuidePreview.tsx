@@ -355,7 +355,7 @@ function PresentationMockupWeb({ result }: { result: BrandGuideResult }) {
           <div className="w-12 h-1 rounded-full" style={{ backgroundColor: primary }} />
         </div>
         <div className="flex justify-between items-end">
-          <span className="text-white/30 text-[10px]">{result.companyName} — Presentatie 2026</span>
+          <span className="text-white/30 text-[10px]">{result.companyName} · Presentatie 2026</span>
           <span className="text-white/30 text-[10px]">01</span>
         </div>
       </div>
@@ -757,7 +757,7 @@ export default function BrandGuidePreview({ result, isPremium, guideId, viewerIs
             </div>
             <div>
               <p className="text-xs font-semibold text-neutral-800">Premium: alle logo-varianten downloaden</p>
-              <p className="text-[10px] text-neutral-400">Full color, zwart, wit, merkkleur — als SVG en PNG (512, 1024, 2048px)</p>
+              <p className="text-[10px] text-neutral-400">Full color, zwart, wit, merkkleur: als SVG en PNG (512, 1024, 2048px)</p>
             </div>
           </div>
           {!isPremium && (
@@ -975,7 +975,7 @@ export default function BrandGuidePreview({ result, isPremium, guideId, viewerIs
         <div className="grid grid-cols-2 gap-4 mb-6">
           {/* Display font */}
           <div className="bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
-            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Display — {displayFont}</p>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Display: {displayFont}</p>
             <div style={{ fontFamily: `'${displayFont}', serif` }}>
               <p className="text-5xl font-bold text-neutral-900 leading-none">Aa</p>
               <p className="text-xl font-bold text-neutral-800 mt-3">{result.companyName}</p>
@@ -996,7 +996,7 @@ export default function BrandGuidePreview({ result, isPremium, guideId, viewerIs
           </div>
           {/* Body font */}
           <div className="bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
-            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Body — {bodyFont}</p>
+            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Body: {bodyFont}</p>
             <div style={{ fontFamily: `'${bodyFont}', sans-serif` }}>
               <p className="text-2xl font-bold text-neutral-900 leading-none">Aa</p>
               <p className="text-sm leading-relaxed text-neutral-700 mt-3 line-clamp-3">{result.brandStory ?? result.strategy?.brandStory}</p>
@@ -1299,7 +1299,7 @@ export default function BrandGuidePreview({ result, isPremium, guideId, viewerIs
                 href={`/upgrade?guideId=${guideId}`}
                 className="inline-block mt-2 py-3 px-8 bg-white rounded-xl font-semibold text-sm hover:bg-neutral-100 transition-colors"
                 style={{ color: primary }}>
-                Upgrade naar Premium — &euro;18,95/maand &rarr;
+                Upgrade naar Premium · &euro;18,95/maand &rarr;
               </a>
             </div>
           </div>

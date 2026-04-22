@@ -174,7 +174,7 @@ export function PresentationSlideMockup(p: MockupProps) {
       </View>
       {/* Bottom */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <Text style={{ fontSize: 7, color: "#ffffff66", fontFamily: p.bodyFont }}>{p.companyName} — Presentatie 2026</Text>
+        <Text style={{ fontSize: 7, color: "#ffffff66", fontFamily: p.bodyFont }}>{p.companyName} · Presentatie 2026</Text>
         <Text style={{ fontSize: 7, color: "#ffffff66", fontFamily: p.bodyFont }}>01</Text>
       </View>
     </View>
@@ -198,7 +198,7 @@ export function MerchandiseMockup(p: MockupProps) {
           <Text style={{ fontSize: 8, fontWeight: 700, color: "#ffffff", fontFamily: p.displayFont, marginTop: 6 }}>{p.companyName}</Text>
         </View>
       </View>
-      <Text style={{ fontSize: 7, color: "#71717a", marginTop: 10, fontFamily: p.bodyFont }}>Merchandise — T-shirt</Text>
+      <Text style={{ fontSize: 7, color: "#71717a", marginTop: 10, fontFamily: p.bodyFont }}>Merchandise: T-shirt</Text>
     </View>
   );
 }
@@ -219,7 +219,7 @@ export function CoffeeCupMockup(p: MockupProps) {
         {/* Lid */}
         <View style={{ position: "absolute", top: -8, width: 88, height: 10, backgroundColor: p.darkNeutral, borderRadius: 2 }} />
       </View>
-      <Text style={{ fontSize: 7, color: "#71717a", marginTop: 10, fontFamily: p.bodyFont }}>Merchandise — Koffiebeker</Text>
+      <Text style={{ fontSize: 7, color: "#71717a", marginTop: 10, fontFamily: p.bodyFont }}>Merchandise: Koffiebeker</Text>
     </View>
   );
 }

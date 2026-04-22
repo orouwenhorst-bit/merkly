@@ -54,7 +54,7 @@ export async function sendWelcomeEmail(email: string, name?: string) {
       Welkom bij Merkly, ${firstName}!
     </h1>
     <p style="margin:0 0 24px;font-size:15px;color:#888;line-height:1.6;">
-      Je account is aangemaakt. Je kunt nu direct je eerste huisstijl genereren — gratis.
+      Je account is aangemaakt. Je kunt nu direct je eerste huisstijl genereren, gratis.
     </p>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
@@ -81,14 +81,14 @@ export async function sendWelcomeEmail(email: string, name?: string) {
     </a>
 
     <p style="margin:28px 0 0;font-size:13px;color:#555;line-height:1.6;">
-      Wil je meer? Upgrade naar <strong style="color:#a78bfa;">Merkly Premium</strong> voor onbeperkt genereren, PDF-downloads, AI-logo's en meer — voor €18,95/maand.
+      Wil je meer? Upgrade naar <strong style="color:#a78bfa;">Merkly Premium</strong> voor onbeperkt genereren, PDF-downloads, AI-logo's en meer, voor €18,95/maand.
     </p>
   `);
 
   return resend.emails.send({
     from: FROM,
     to: email,
-    subject: "Welkom bij Merkly — maak je eerste huisstijl",
+    subject: "Welkom bij Merkly: maak je eerste huisstijl",
     html,
   });
 }
@@ -140,7 +140,7 @@ export async function sendPremiumEmail(email: string, name?: string) {
   return resend.emails.send({
     from: FROM,
     to: email,
-    subject: "Premium actief — je Merkly account is geüpgraded",
+    subject: "Premium actief: je Merkly account is geüpgraded",
     html,
   });
 }

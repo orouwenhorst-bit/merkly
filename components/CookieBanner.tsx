@@ -43,7 +43,7 @@ export default function CookieBanner() {
       <div className="max-w-3xl mx-auto bg-neutral-900 border border-neutral-800 rounded-2xl px-5 py-4 shadow-2xl shadow-black/40 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         {/* Text */}
         <div className="flex-1 text-sm text-neutral-400 leading-relaxed">
-          <span className="font-semibold text-white">Cookies</span> — Merkly gebruikt functionele
+          <span className="font-semibold text-white">Cookies</span>: Merkly gebruikt functionele
           cookies voor authenticatie en veilige betalingen via Stripe. We plaatsen{" "}
           <span className="text-white">geen</span> tracking- of advertentiecookies.{" "}
           <Link href="/cookies" className="text-violet-400 hover:text-violet-300 transition-colors underline underline-offset-2">

@@ -155,7 +155,7 @@ export default async function Home() {
           {[
             {
               title: "Kleurenpalet",
-              desc: "7 zorgvuldig gekozen kleuren — primair, secundair en neutraal — met hex-codes, verhoudingen en toepassingsregels.",
+              desc: "7 zorgvuldig gekozen kleuren: primair, secundair en neutraal, met hex-codes, verhoudingen en toepassingsregels.",
               icon: (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
@@ -177,7 +177,7 @@ export default async function Home() {
             },
             {
               title: "Merkstrategie",
-              desc: "Missie, visie, kernwaarden en een volledig merkverhaal — de strategische fundering van jouw merk.",
+              desc: "Missie, visie, kernwaarden en een volledig merkverhaal: de strategische fundering van jouw merk.",
               icon: (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
@@ -210,7 +210,7 @@ export default async function Home() {
             },
             {
               title: "Online brand guide",
-              desc: "Jouw volledige brand guide direct te bekijken via een unieke link — deel hem met je team, klanten of leveranciers.",
+              desc: "Jouw volledige brand guide direct te bekijken via een unieke link, te delen met je team, klanten of leveranciers.",
               icon: (
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
@@ -252,7 +252,7 @@ export default async function Home() {
               <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent"> merk nodig heeft</span>
             </h2>
             <p className="text-neutral-400 text-lg max-w-xl mx-auto">
-              Premium geeft je volledige controle — van logo tot PDF, van slogans tot mockups.
+              Premium geeft je volledige controle: van logo tot PDF, van slogans tot mockups.
               Onbeperkt, direct en zonder gedoe.
             </p>
           </div>
@@ -273,7 +273,7 @@ export default async function Home() {
                 <h3 className="text-xl font-bold text-white mb-2">Onbeperkt nieuwe logo&apos;s genereren</h3>
                 <p className="text-neutral-400 text-sm leading-relaxed mb-5">
                   Niet tevreden met je logo? Genereer met één klik een nieuw concept. Vergelijk oud en nieuw naast elkaar
-                  en kies zelf welke je behoudt — zonder de rest van je huisstijl te verliezen.
+                  en kies zelf welke je behoudt, zonder de rest van je huisstijl te verliezen.
                 </p>
                 {/* Logo vergelijking mockup */}
                 <div className="flex gap-3">
@@ -310,7 +310,7 @@ export default async function Home() {
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">5 varianten, klaar voor elk formaat</h3>
                 <p className="text-neutral-400 text-sm leading-relaxed mb-5">
-                  Download je logo in SVG én PNG — in volledig kleur, zwart, wit, merkkleur en transparant.
+                  Download je logo in SVG én PNG: volledig kleur, zwart, wit, merkkleur en transparant.
                   Geschikt voor websites, drukwerk, social media en merchandise.
                 </p>
                 {/* 5 varianten mockup */}
@@ -370,7 +370,7 @@ export default async function Home() {
                 <h3 className="text-base font-bold text-white mb-2">Merktoepassing mockups</h3>
                 <p className="text-neutral-400 text-sm leading-relaxed">
                   Zie je merk direct in de praktijk: visitekaartje, Instagram post,
-                  website header en e-mailhandtekening — allemaal in jouw kleuren.
+                  website header en e-mailhandtekening, allemaal in jouw kleuren.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {["Visitekaartje", "Instagram", "Website", "E-mail"].map((m) => (
@@ -417,7 +417,7 @@ export default async function Home() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-bold text-white mb-1.5">Voorbeeldteksten & brand voice</h3>
                   <p className="text-neutral-400 text-sm leading-relaxed">
-                    Kant-en-klare teksten voor je website, social media en e-mail — geschreven in jouw tone of voice.
+                    Kant-en-klare teksten voor je website, social media en e-mail, geschreven in jouw tone of voice.
                     Kopieer en gebruik direct.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -441,7 +441,7 @@ export default async function Home() {
                   <div>
                     <p className="text-sm font-semibold text-white mb-0.5">WCAG kleurcontrast-check</p>
                     <p className="text-xs text-neutral-400 leading-relaxed">
-                      Automatische toegankelijkheidsvalidatie — je kleuren worden gecontroleerd op AA- en AAA-normen.
+                      Automatische toegankelijkheidsvalidatie: je kleuren worden gecontroleerd op AA- en AAA-normen.
                     </p>
                   </div>
                 </div>
@@ -455,7 +455,7 @@ export default async function Home() {
                   <div>
                     <p className="text-sm font-semibold text-white mb-0.5">Onbeperkt genereren</p>
                     <p className="text-xs text-neutral-400 leading-relaxed">
-                      Geen daglimieten. Genereer zoveel huisstijlen als je wilt — voor elke klant, elk project, elk idee.
+                      Geen daglimieten. Genereer zoveel huisstijlen als je wilt, voor elke klant, elk project, elk idee.
                     </p>
                   </div>
                 </div>
@@ -469,7 +469,7 @@ export default async function Home() {
               href="/upgrade"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold px-8 py-4 rounded-xl text-base hover:from-violet-500 hover:to-fuchsia-500 transition-all shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40"
             >
-              ✦ Start met Premium — €18,95/maand
+              ✦ Start met Premium · €18,95/maand
             </Link>
             <p className="text-sm text-neutral-600 mt-3">Maandelijks opzegbaar &middot; Direct actief na betaling</p>
           </div>
@@ -585,12 +585,12 @@ export default async function Home() {
             },
             {
               title: "Volledig compleet",
-              desc: "Van kleurenpalet en typografie tot logo, mockups, merkverhaal en voorbeeldteksten — alles in één keer.",
+              desc: "Van kleurenpalet en typografie tot logo, mockups, merkverhaal en voorbeeldteksten: alles in één keer.",
               gradient: "from-fuchsia-500 to-fuchsia-600",
             },
             {
               title: "Fractie van de prijs",
-              desc: "Gratis te proberen. Premium voor €18,95/maand — minder dan de koffie bij je eerste bureaugesprek.",
+              desc: "Gratis te proberen. Premium voor €18,95/maand, minder dan de koffie bij je eerste bureaugesprek.",
               gradient: "from-cyan-500 to-cyan-600",
             },
           ].map(({ title, desc, gradient }) => (
@@ -664,10 +664,10 @@ export default async function Home() {
                 "Onbeperkt genereren",
                 "Volledige brand guide direct",
                 "Download als PDF (11 pagina's)",
-                "AI-logo SVG/PNG — 5 varianten",
+                "AI-logo SVG/PNG: 5 varianten",
                 "Onbeperkt logo regenereren",
                 "Slogans regenereren & bewaren",
-                "Mockups — visitekaartje, social media",
+                "Mockups: visitekaartje, social media",
                 "Voorbeeldteksten & brand voice",
                 "WCAG kleurcontrast-check",
                 "Maandelijks opzegbaar",
@@ -699,7 +699,7 @@ export default async function Home() {
             Klaar om je merk te bouwen?
           </h2>
           <p className="relative text-neutral-400 mb-8 max-w-md mx-auto">
-            Probeer Merkly gratis — geen account nodig. Of ga direct voor Premium
+            Probeer Merkly gratis, geen account nodig. Of ga direct voor Premium
             en krijg alles wat je nodig hebt in één abonnement.
           </p>
           <div className="relative flex flex-col sm:flex-row items-center justify-center gap-4">

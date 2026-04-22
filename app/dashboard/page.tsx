@@ -68,7 +68,7 @@ export default async function DashboardPage({
         <div className="bg-violet-500/10 border border-violet-500/30 rounded-2xl px-5 py-4 mb-6 flex items-center gap-3">
           <span className="text-violet-300 text-lg">✦</span>
           <div>
-            <p className="font-semibold text-violet-200">Premium actief — welkom!</p>
+            <p className="font-semibold text-violet-200">Premium actief - welkom!</p>
             <p className="text-sm text-neutral-400">
               Je kunt nu onbeperkt volledige huisstijlen genereren en alles als PDF downloaden.
             </p>
@@ -183,7 +183,7 @@ export default async function DashboardPage({
           <h2 className="text-lg font-semibold">Jouw recente huisstijlen</h2>
           <p className="text-sm text-neutral-500">
             {guides.length === 0
-              ? "Nog geen huisstijlen — begin hieronder."
+              ? "Nog geen huisstijlen. Begin hieronder."
               : `${guides.length} totaal · toont de ${Math.min(guides.length, 6)} nieuwste`}
           </p>
         </div>

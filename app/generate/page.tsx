@@ -309,7 +309,7 @@ export default function GeneratePage() {
               {/* Divider */}
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-neutral-800" />
-                <span className="text-xs text-neutral-600">Optioneel — voor een beter resultaat</span>
+                <span className="text-xs text-neutral-600">Optioneel, voor een beter resultaat</span>
                 <div className="flex-1 h-px bg-neutral-800" />
               </div>
 
@@ -345,7 +345,7 @@ export default function GeneratePage() {
               <div>
                 <label className="block text-sm font-medium text-neutral-300 mb-1.5">
                   Voorkeurskleur
-                  <span className="ml-2 text-xs font-normal text-neutral-500">— optioneel, bouwt het palet hieromheen</span>
+                  <span className="ml-2 text-xs font-normal text-neutral-500">- optioneel, bouwt het palet hieromheen</span>
                 </label>
                 <div className="flex flex-wrap items-center gap-2">
                   {[

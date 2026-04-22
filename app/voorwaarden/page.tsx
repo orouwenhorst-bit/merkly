@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Algemene voorwaarden",
   description:
-    "De algemene voorwaarden voor het gebruik van Merkly — de dienst, betalingen, intellectueel eigendom en aansprakelijkheid.",
+    "De algemene voorwaarden voor het gebruik van Merkly: de dienst, betalingen, intellectueel eigendom en aansprakelijkheid.",
   alternates: { canonical: "/voorwaarden" },
 };
 
@@ -104,8 +104,8 @@ export default function TermsPage() {
           voor het verifiëren dat het gebruik niet in strijd is met rechten van derden.
         </p>
         <p>
-          Het platform Merkly zelf — inclusief de software, het ontwerp, de prompt-logica en het
-          merk &quot;Merkly&quot; — blijft eigendom van Merkly.
+          Het platform Merkly zelf (inclusief de software, het ontwerp, de prompt-logica en het
+          merk &quot;Merkly&quot;) blijft eigendom van Merkly.
         </p>
       </LegalSection>
 

@@ -296,7 +296,7 @@ function PageFooter({ label, num, styles }: { label: string; num: string; styles
   return (
     <View style={styles.pageFooter} fixed>
       <Text>{label}</Text>
-      <Text>Merkly — merkly.nl</Text>
+      <Text>Merkly · merkly.nl</Text>
       <Text>{num}</Text>
     </View>
   );
@@ -336,7 +336,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
   };
 
   return (
-    <Document title={`${result.companyName} — Huisstijl`} author="Merkly" subject="Brand guide">
+    <Document title={`${result.companyName} | Huisstijl`} author="Merkly" subject="Brand guide">
 
       {/* ═══════ PAGE 1: COVER ═══════ */}
       <Page size="A4" style={[styles.pageNoPadding, styles.coverPage]}>
@@ -355,14 +355,14 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
           </View>
         </View>
         <View style={styles.coverBottom}>
-          <Text style={styles.coverFooter}>Gegenereerd met Merkly — merkly.nl</Text>
+          <Text style={styles.coverFooter}>Gegenereerd met Merkly · merkly.nl</Text>
           <Text style={styles.coverFooter}>Vertrouwelijk</Text>
         </View>
       </Page>
 
       {/* ═══════ PAGE 2: MERKSTRATEGIE ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="01 — STRATEGIE" title="Merkstrategie" subtitle="De strategische basis waarop alle visuele en communicatieve keuzes rusten" styles={styles} />
+        <SectionHead num="01: STRATEGIE" title="Merkstrategie" subtitle="De strategische basis waarop alle visuele en communicatieve keuzes rusten" styles={styles} />
 
         {/* Missie & Visie */}
         <View style={styles.twoCol}>
@@ -414,7 +414,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
       {/* ═══════ PAGE 3: PERSONA'S ═══════ */}
       {result.strategy?.personas?.length > 0 && (
         <Page size="A4" style={styles.page}>
-          <SectionHead num="01.1 — DOELGROEP" title="Persona's" subtitle="De mensen voor wie jullie merk bestaat" styles={styles} />
+          <SectionHead num="01.1: DOELGROEP" title="Persona's" subtitle="De mensen voor wie jullie merk bestaat" styles={styles} />
           {result.strategy.personas.map((p) => (
             <View key={p.name} wrap={false} style={{ marginBottom: 24, padding: 20, backgroundColor: "#fafafa", borderRadius: 8 }}>
               <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
@@ -446,7 +446,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
 
       {/* ═══════ PAGE 4: LOGO PRIMAIR ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="02 — LOGO" title="Primair merkteken" subtitle="Het hart van jullie visuele identiteit" styles={styles} />
+        <SectionHead num="02: LOGO" title="Primair merkteken" subtitle="Het hart van jullie visuele identiteit" styles={styles} />
         <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", minHeight: 260 }]}>
           {renderLogo("lg")}
           <Text style={styles.logoCaption}>{result.companyName}</Text>
@@ -461,12 +461,12 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             <Text style={{ fontSize: 11, fontFamily: "Courier", color: "#1a1a1a" }}>{primary.toUpperCase()}</Text>
           </View>
         </View>
-        <PageFooter label="Logo — Primair" num="04" styles={styles} />
+        <PageFooter label="Logo: Primair" num="04" styles={styles} />
       </Page>
 
       {/* ═══════ PAGE 5: LOGO VARIATIES ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="02.1 — VARIANTEN" title="Logo-variaties" subtitle="Verschillende toepassingen voor verschillende contexten" styles={styles} />
+        <SectionHead num="02.1: VARIANTEN" title="Logo-variaties" subtitle="Verschillende toepassingen voor verschillende contexten" styles={styles} />
 
         {/* Horizontal lockup */}
         <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", flexDirection: "row", gap: 16, minHeight: 130 }]}>
@@ -512,24 +512,24 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             <Text style={styles.logoLabel}>Op donkere achtergrond</Text>
           </View>
         </View>
-        <PageFooter label="Logo — Variaties" num="05" styles={styles} />
+        <PageFooter label="Logo: Variaties" num="05" styles={styles} />
       </Page>
 
       {/* ═══════ PAGE 6: LOGO RICHTLIJNEN ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="02.2 — RICHTLIJNEN" title="Logo-richtlijnen" subtitle="Regels voor consistent logogebruik" styles={styles} />
+        <SectionHead num="02.2: RICHTLIJNEN" title="Logo-richtlijnen" subtitle="Regels voor consistent logogebruik" styles={styles} />
 
         <View wrap={false} style={styles.grid2}>
           <View style={[styles.guidelineBox, styles.guidelineBoxDo]}>
             <Text style={[styles.guidelineTitle, styles.guidelineTitleDo]}>Wel doen</Text>
             {result.logoGuidelines?.doList?.map((item, i) => (
-              <Text key={i} style={styles.guidelineItem}>— {item}</Text>
+              <Text key={i} style={styles.guidelineItem}>- {item}</Text>
             ))}
           </View>
           <View style={[styles.guidelineBox, styles.guidelineBoxDont]}>
             <Text style={[styles.guidelineTitle, styles.guidelineTitleDont]}>Niet doen</Text>
             {result.logoGuidelines?.dontList?.map((item, i) => (
-              <Text key={i} style={styles.guidelineItem}>— {item}</Text>
+              <Text key={i} style={styles.guidelineItem}>- {item}</Text>
             ))}
           </View>
         </View>
@@ -541,12 +541,12 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             {"\n\n"}Minimum formaat: {result.logoGuidelines?.minimumSizes?.digitalPx ?? 24}px (digitaal) / {result.logoGuidelines?.minimumSizes?.printMm ?? 15}mm (print).
           </Text>
         </View>
-        <PageFooter label="Logo — Richtlijnen" num="06" styles={styles} />
+        <PageFooter label="Logo: Richtlijnen" num="06" styles={styles} />
       </Page>
 
       {/* ═══════ PAGE 7: KLEURENPALET ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="03 — KLEUR" title="Kleurenpalet" subtitle={`${colors.length} kleuren die samen jullie merkidentiteit vormen`} styles={styles} />
+        <SectionHead num="03: KLEUR" title="Kleurenpalet" subtitle={`${colors.length} kleuren die samen jullie merkidentiteit vormen`} styles={styles} />
 
         {/* Group by category */}
         {(["primary", "secondary", "neutral"] as const).map((cat) => {
@@ -590,7 +590,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
       {/* ═══════ PAGE 8: WCAG TOEGANKELIJKHEID ═══════ */}
       {result.colorPalette?.accessibility?.length > 0 && (
         <Page size="A4" style={styles.page}>
-          <SectionHead num="03.1 — TOEGANKELIJKHEID" title="Kleurcontrast & WCAG" subtitle="Server-side berekende contrastverhoudingen conform WCAG 2.1" styles={styles} />
+          <SectionHead num="03.1: TOEGANKELIJKHEID" title="Kleurcontrast & WCAG" subtitle="Server-side berekende contrastverhoudingen conform WCAG 2.1" styles={styles} />
 
           {/* Header */}
           <View style={[styles.accRow, { borderBottomWidth: 2, borderBottomColor: "#e5e5e5" }]}>
@@ -633,13 +633,13 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
 
       {/* ═══════ PAGE 9: TYPOGRAFIE ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="04 — TYPOGRAFIE" title="Lettertypes" subtitle="De stem van jullie merk in geschreven vorm" styles={styles} />
+        <SectionHead num="04: TYPOGRAFIE" title="Lettertypes" subtitle="De stem van jullie merk in geschreven vorm" styles={styles} />
 
         {/* Font showcases */}
         {result.typography?.fonts?.map((font) => (
           <View key={font.name} wrap={false} style={styles.fontShowcase}>
             <Text style={styles.fontShowcaseLabel}>
-              {font.category === "display" ? "Display" : font.category === "body" ? "Body" : "Accent"} — {font.name}
+              {font.category === "display" ? "Display" : font.category === "body" ? "Body" : "Accent"}: {font.name}
             </Text>
             <Text style={[styles.fontShowcaseGiant, { fontFamily: font.category === "display" ? df : bf }]}>Aa</Text>
             <Text style={[styles.fontShowcaseCompany, { fontFamily: font.category === "display" ? df : bf }]}>{result.companyName}</Text>
@@ -663,7 +663,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
       {/* ═══════ PAGE 10: TYPE SCALE ═══════ */}
       {result.typography?.typeScale?.length > 0 && (
         <Page size="A4" style={styles.page}>
-          <SectionHead num="04.1 — TYPE SCALE" title="Typografische schaal" subtitle="Consistente hiërarchie voor alle tekstelementen" styles={styles} />
+          <SectionHead num="04.1: TYPE SCALE" title="Typografische schaal" subtitle="Consistente hiërarchie voor alle tekstelementen" styles={styles} />
 
           {/* Table header */}
           <View style={styles.tsHeader}>
@@ -691,11 +691,11 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             <Text style={styles.label}>Visueel voorbeeld</Text>
             {result.typography.typeScale.filter(ts => ts.level.startsWith("H")).slice(0, 4).map((ts) => (
               <Text key={ts.level} style={{ fontSize: Math.min(ts.sizePx * 0.6, 36), fontWeight: ts.weight >= 600 ? 700 : 400, fontFamily: df, color: "#0a0a0a", marginBottom: 8, lineHeight: 1.2 }}>
-                {ts.level} — {result.companyName}
+                {ts.level} - {result.companyName}
               </Text>
             ))}
             <Text style={{ fontSize: 10, color: "#3f3f46", fontFamily: bf, lineHeight: 1.6, marginTop: 8 }}>
-              Body — Dit is een voorbeeld van lopende tekst in het body-lettertype. Goed leesbaar op alle schermformaten.
+              Body: Dit is een voorbeeld van lopende tekst in het body-lettertype. Goed leesbaar op alle schermformaten.
             </Text>
           </View>
           <PageFooter label="Type Scale" num="10" styles={styles} />
@@ -704,7 +704,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
 
       {/* ═══════ PAGE 11: TONE OF VOICE ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="05 — STEM" title="Tone of Voice" subtitle="Hoe jullie merk klinkt in alle communicatie" styles={styles} />
+        <SectionHead num="05: STEM" title="Tone of Voice" subtitle="Hoe jullie merk klinkt in alle communicatie" styles={styles} />
 
         {/* Voice attributes */}
         <Text style={styles.label}>Stemattributen</Text>
@@ -719,13 +719,13 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
           <View style={[styles.guidelineBox, styles.guidelineBoxDo]}>
             <Text style={[styles.guidelineTitle, styles.guidelineTitleDo]}>Wel doen</Text>
             {result.toneOfVoice?.doList?.map((item, i) => (
-              <Text key={i} style={styles.guidelineItem}>— {item}</Text>
+              <Text key={i} style={styles.guidelineItem}>- {item}</Text>
             ))}
           </View>
           <View style={[styles.guidelineBox, styles.guidelineBoxDont]}>
             <Text style={[styles.guidelineTitle, styles.guidelineTitleDont]}>Niet doen</Text>
             {result.toneOfVoice?.dontList?.map((item, i) => (
-              <Text key={i} style={styles.guidelineItem}>— {item}</Text>
+              <Text key={i} style={styles.guidelineItem}>- {item}</Text>
             ))}
           </View>
         </View>
@@ -760,7 +760,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
       {/* ═══════ PAGE 12: BRAND VOICE & COPY ═══════ */}
       {result.brandVoiceExamples && (
         <Page size="A4" style={styles.page}>
-          <SectionHead num="06 — COPY" title="Brand voice & copy" subtitle="Kant-en-klare teksten in jullie merkstijl" styles={styles} />
+          <SectionHead num="06: COPY" title="Brand voice & copy" subtitle="Kant-en-klare teksten in jullie merkstijl" styles={styles} />
 
           <View style={styles.copyBlockDark}>
             <Text style={styles.copyLabelDark}>Website headline</Text>
@@ -799,7 +799,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
 
       {/* ═══════ PAGE 13: BEELDTAAL & ICONOGRAFIE ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="07 — BEELD" title="Beeldtaal & Iconografie" subtitle="Richtlijnen voor fotografie, illustraties en iconen" styles={styles} />
+        <SectionHead num="07: BEELD" title="Beeldtaal & Iconografie" subtitle="Richtlijnen voor fotografie, illustraties en iconen" styles={styles} />
 
         {/* Fotografie */}
         {result.imageryGuidelines && (
@@ -824,13 +824,13 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
               <View style={[styles.guidelineBox, styles.guidelineBoxDo]}>
                 <Text style={[styles.guidelineTitle, styles.guidelineTitleDo]}>Wel</Text>
                 {result.imageryGuidelines.doList?.map((item, i) => (
-                  <Text key={i} style={styles.guidelineItem}>— {item}</Text>
+                  <Text key={i} style={styles.guidelineItem}>- {item}</Text>
                 ))}
               </View>
               <View style={[styles.guidelineBox, styles.guidelineBoxDont]}>
                 <Text style={[styles.guidelineTitle, styles.guidelineTitleDont]}>Niet</Text>
                 {result.imageryGuidelines.dontList?.map((item, i) => (
-                  <Text key={i} style={styles.guidelineItem}>— {item}</Text>
+                  <Text key={i} style={styles.guidelineItem}>- {item}</Text>
                 ))}
               </View>
             </View>
@@ -866,7 +866,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
       {/* ═══════ PAGE 14: GRAFISCHE ELEMENTEN ═══════ */}
       {result.graphicElements && (
         <Page size="A4" style={styles.page}>
-          <SectionHead num="08 — GRAFISCH" title="Grafische elementen" subtitle="Visuele signature elementen die het merk herkenbaar maken" styles={styles} />
+          <SectionHead num="08: GRAFISCH" title="Grafische elementen" subtitle="Visuele signature elementen die het merk herkenbaar maken" styles={styles} />
 
           <Text style={styles.bodyText}>{result.graphicElements.description}</Text>
 
@@ -891,7 +891,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
 
       {/* ═══════ PAGE 15: MERKTOEPASSINGEN ═══════ */}
       <Page size="A4" style={styles.page}>
-        <SectionHead num="09 — TOEPASSING" title="Merktoepassingen" subtitle="Zo ziet jullie merk eruit in de praktijk" styles={styles} />
+        <SectionHead num="09: TOEPASSING" title="Merktoepassingen" subtitle="Zo ziet jullie merk eruit in de praktijk" styles={styles} />
 
         {/* Business card */}
         <Text style={styles.label}>Visitekaartje</Text>
@@ -962,7 +962,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
         return (
           <>
             <Page size="A4" style={styles.page}>
-              <SectionHead num="10 — MOCKUPS" title="Visuele toepassingen" subtitle="Zo komt jullie merk tot leven op verschillende touchpoints" styles={styles} />
+              <SectionHead num="10: MOCKUPS" title="Visuele toepassingen" subtitle="Zo komt jullie merk tot leven op verschillende touchpoints" styles={styles} />
               <View wrap={false} style={styles.grid2}>
                 <View style={{ flex: 1, width: "50%" }}>
                   <InstagramPostMockup {...mp} />
@@ -979,7 +979,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             </Page>
 
             <Page size="A4" style={styles.page}>
-              <SectionHead num="10.1 — MOCKUPS" title="Digitaal & print" subtitle="Website, presentatie, briefpapier en factuur in jullie huisstijl" styles={styles} />
+              <SectionHead num="10.1: MOCKUPS" title="Digitaal & print" subtitle="Website, presentatie, briefpapier en factuur in jullie huisstijl" styles={styles} />
               <WebsiteMockup {...mp} />
               <Text style={[styles.logoLabel, { marginBottom: 16 }]}>Website</Text>
               <View wrap={false} style={styles.grid2}>
@@ -996,7 +996,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             </Page>
 
             <Page size="A4" style={styles.page}>
-              <SectionHead num="10.2 — MOCKUPS" title="Zakelijke documenten" subtitle="Briefpapier en factuur in jullie huisstijl" styles={styles} />
+              <SectionHead num="10.2: MOCKUPS" title="Zakelijke documenten" subtitle="Briefpapier en factuur in jullie huisstijl" styles={styles} />
               <View wrap={false} style={styles.grid2}>
                 <View style={{ flex: 1, width: "50%" }}>
                   <LetterheadMockup {...mp} />

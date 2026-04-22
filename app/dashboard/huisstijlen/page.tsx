@@ -33,7 +33,7 @@ export default async function HuisstijlenPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-1">Alle huisstijlen</h1>
           <p className="text-sm text-neutral-500">
             {guides.length === 0
-              ? "Nog geen huisstijlen — genereer je eerste."
+              ? "Nog geen huisstijlen. Genereer je eerste."
               : `${guides.length} ${guides.length === 1 ? "huisstijl" : "huisstijlen"} totaal`}
           </p>
         </div>
