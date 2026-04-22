@@ -171,26 +171,34 @@ export default function GeneratePage() {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setLoading(true);
       setError("");
 
+      let step = "start";
       try {
+        step = "fetch";
         const res = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         });
 
+        step = "json-parse";
         const data = await res.json();
+
+        step = "response-check";
         if (!res.ok) throw new Error(data.error);
 
+        step = "navigate";
         setDone(true);
         await new Promise((r) => setTimeout(r, 700));
         window.location.href = `/result/${data.id}`;
       } catch (err) {
-        console.error("Generate error:", err);
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`Generate error at step [${step}]:`, err);
         setLoading(false);
-        setError(err instanceof Error ? err.message : "Er ging iets mis bij het genereren. Probeer het opnieuw.");
+        setError(`[${step}] ${msg}`);
       }
     },
     [form]
@@ -218,7 +226,7 @@ export default function GeneratePage() {
           {/* Background glow */}
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-gradient-to-br from-violet-600/10 via-fuchsia-500/5 to-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <form onSubmit={handleSubmit} className="relative w-full max-w-xl space-y-8">
+          <form onSubmit={handleSubmit} noValidate className="relative w-full max-w-xl space-y-8">
             {/* Header */}
             <div className="space-y-3 text-center">
               <div className="inline-flex items-center gap-2 bg-neutral-900/80 border border-neutral-800 rounded-full px-4 py-1.5 text-xs text-neutral-400">
