@@ -171,26 +171,34 @@ export default function GeneratePage() {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       setLoading(true);
       setError("");
 
+      let step = "start";
       try {
+        step = "fetch";
         const res = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         });
 
+        step = "json-parse";
         const data = await res.json();
+
+        step = "response-check";
         if (!res.ok) throw new Error(data.error);
 
+        step = "navigate";
         setDone(true);
         await new Promise((r) => setTimeout(r, 700));
         window.location.href = `/result/${data.id}`;
       } catch (err) {
-        console.error("Generate error:", err);
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`Generate error at step [${step}]:`, err);
         setLoading(false);
-        setError(err instanceof Error ? err.message : "Er ging iets mis bij het genereren. Probeer het opnieuw.");
+        setError(`[${step}] ${msg}`);
       }
     },
     [form]
