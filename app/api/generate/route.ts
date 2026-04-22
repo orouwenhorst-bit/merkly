@@ -132,6 +132,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ id: savedGuide.id, result });
   } catch (err) {
     console.error("Generate error:", err);
-    return NextResponse.json({ error: "Generatie mislukt" }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message || "Generatie mislukt" }, { status: 500 });
   }
 }
