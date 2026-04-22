@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 
 const INDUSTRIES = [
   "Horeca & Food",
@@ -156,7 +155,6 @@ function ProgressOverlay({ companyName, done }: { companyName: string; done: boo
 }
 
 export default function GeneratePage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -188,14 +186,14 @@ export default function GeneratePage() {
 
         setDone(true);
         await new Promise((r) => setTimeout(r, 700));
-        router.push(`/result/${data.id}`);
+        window.location.href = `/result/${data.id}`;
       } catch (err) {
         console.error("Generate error:", err);
         setLoading(false);
         setError(err instanceof Error ? err.message : "Er ging iets mis bij het genereren. Probeer het opnieuw.");
       }
     },
-    [form, router]
+    [form]
   );
 
   const isFormValid = form.companyName && form.industry && form.mood && form.targetAudience;
