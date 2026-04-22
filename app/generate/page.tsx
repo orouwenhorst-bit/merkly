@@ -147,7 +147,7 @@ function ProgressOverlay({ companyName, done }: { companyName: string; done: boo
         </div>
 
         <p className="text-xs text-neutral-600 pt-4">
-          Dit duurt ongeveer 30 seconden. Je brand guide bevat kleuren, typografie,
+          Dit duurt ongeveer een minuut. Je brand guide bevat kleuren, typografie,
           merkverhaal, merkpersoonlijkheid en meer.
         </p>
       </div>

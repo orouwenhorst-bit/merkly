@@ -62,7 +62,7 @@ export default async function Home() {
         </h1>
 
         <p className="relative text-lg text-neutral-400 max-w-xl leading-relaxed mb-10">
-          Geen grafisch bureau nodig. Beschrijf je merk en ontvang binnen 30 seconden
+          Geen grafisch bureau nodig. Beschrijf je merk en ontvang binnen een minuut
           een complete brand guide: kleurenpalet, typografie, logo, merkverhaal en meer.
         </p>
 
@@ -573,7 +573,7 @@ export default async function Home() {
         <h2 className="text-3xl sm:text-4xl font-bold mb-4">Waarom Merkly?</h2>
         <p className="text-neutral-400 mb-12 max-w-lg mx-auto">
           Een grafisch bureau rekent €2.000 tot €10.000 voor een huisstijl.
-          Merkly doet het in 30 seconden.
+          Merkly doet het in minder dan een minuut.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
