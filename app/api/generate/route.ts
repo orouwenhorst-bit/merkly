@@ -9,7 +9,12 @@ import { getUserSubscription } from "@/lib/subscription";
 import { BrandInput } from "@/types/brand";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120; // Claude + logo generatie kan tot 2 minuten duren
+export const maxDuration = 120;
+
+function label(step: string, err: unknown): Error {
+  const msg = err instanceof Error ? err.message : String(err);
+  return new Error(`[${step}] ${msg}`);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,15 +24,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Verplichte velden ontbreken" }, { status: 400 });
     }
 
-    // Lees huidige gebruiker uit auth cookies
-    const serverClient = await createServerClient();
-    const { data: { user } } = await serverClient.auth.getUser();
+    // Auth
+    let user: { id: string } | null = null;
+    try {
+      const serverClient = await createServerClient();
+      const { data } = await serverClient.auth.getUser();
+      user = data.user;
+    } catch (err) {
+      throw label("auth", err);
+    }
 
-    const supabase = createClient(); // service client voor DB schrijven
+    const supabase = createClient();
 
-    // Rate limiting voor gratis accounts (3 generaties per dag)
+    // Rate limiting
     if (user) {
-      const { isPremium } = await getUserSubscription(user.id);
+      let isPremium = false;
+      try {
+        ({ isPremium } = await getUserSubscription(user.id));
+      } catch (err) {
+        throw label("subscription-check", err);
+      }
       if (!isPremium) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -45,87 +61,104 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Bepaal of we volledig of licht genereren
+    // Subscription check for generation type
     let isPremiumUser = false;
     if (user) {
-      const sub = await getUserSubscription(user.id);
-      isPremiumUser = sub.isPremium;
+      try {
+        const sub = await getUserSubscription(user.id);
+        isPremiumUser = sub.isPremium;
+      } catch (err) {
+        throw label("subscription-type", err);
+      }
     }
 
-    const result = isPremiumUser
-      ? await generateBrandGuide(body)       // Volledig — PDF + mockups + merkstem
-      : await generateBrandGuideLight(body); // Preview — alleen basis
+    // Claude generatie
+    let result;
+    try {
+      result = isPremiumUser
+        ? await generateBrandGuide(body)
+        : await generateBrandGuideLight(body);
+    } catch (err) {
+      throw label("claude-generatie", err);
+    }
 
-    // Server-side WCAG validatie
+    // WCAG
     if (result.colorPalette?.colors?.length) {
       result.colorPalette.accessibility = calculateAccessibility(result.colorPalette.colors);
     }
 
-    // Sla op in Supabase
+    // Supabase opslaan
     const resultWithInput = { ...result, _input: body };
+    let savedGuide: { id: string };
+    try {
+      const { data, error } = await supabase
+        .from("brand_guides")
+        .insert({
+          company_name: body.companyName,
+          industry: body.industry,
+          mood: body.mood,
+          logo_url: body.logoUrl || null,
+          result: resultWithInput,
+          is_premium: isPremiumUser,
+          user_id: user?.id ?? null,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      savedGuide = data;
+    } catch (err) {
+      throw label("supabase-insert", err);
+    }
 
-    const { data: savedGuide, error } = await supabase
-      .from("brand_guides")
-      .insert({
-        company_name: body.companyName,
-        industry: body.industry,
-        mood: body.mood,
-        logo_url: body.logoUrl || null,
-        result: resultWithInput,
-        is_premium: isPremiumUser,
-        user_id: user?.id ?? null,
-      })
-      .select("id")
-      .single();
-
-    if (error) throw error;
-
+    // Logo generatie
     if (process.env.RECRAFT_API_KEY) {
-      const colors = result.colorPalette?.colors ?? [];
-      const primaryColor =
-        body.preferredColor ||
-        colors.find((c) => c.category === "primary")?.hex ||
-        colors[0]?.hex ||
-        "#000000";
+      try {
+        const colors = result.colorPalette?.colors ?? [];
+        const primaryColor =
+          body.preferredColor ||
+          colors.find((c) => c.category === "primary")?.hex ||
+          colors[0]?.hex ||
+          "#000000";
 
-      const v4Result = await generateLogoSvg(
-        body.industry,
-        body.mood,
-        primaryColor,
-        result.brandPersonality ?? []
-      );
-
-      if (v4Result) {
-        const variants = deriveLogoVariants(v4Result.svg, primaryColor);
-        // Always use the brand-colored variant as the primary display logo.
-        // monoPrimary recolors all non-white fills to the exact primaryColor,
-        // ensuring the logo matches the chosen/derived brand color.
-        const primarySvg = variants.monoPrimary;
-        const publicUrl = await storeLogoSvg(savedGuide.id, primarySvg);
-        result.logoImageUrl = publicUrl ?? undefined;
-        result.iconSvg = undefined;
-        result.logoVariants = {
-          fullColor: primarySvg,
-          monoBlack: variants.monoBlack,
-          monoWhite: variants.monoWhite,
-          monoPrimary: variants.monoPrimary,
-          transparent: primarySvg,
-          recraftImageId: v4Result.imageId,
-        };
-        await supabase.from("brand_guides").update({ result }).eq("id", savedGuide.id);
-      } else {
-        const logoImageUrl = await generateAndStoreLogo(
-          savedGuide.id,
-          body.companyName,
+        const v4Result = await generateLogoSvg(
           body.industry,
           body.mood,
-          primaryColor
+          primaryColor,
+          result.brandPersonality ?? []
         );
-        if (logoImageUrl) {
-          result.logoImageUrl = logoImageUrl;
+
+        if (v4Result) {
+          const variants = deriveLogoVariants(v4Result.svg, primaryColor);
+          const primarySvg = variants.monoPrimary;
+          const publicUrl = await storeLogoSvg(savedGuide.id, primarySvg);
+          result.logoImageUrl = publicUrl ?? undefined;
           result.iconSvg = undefined;
+          result.logoVariants = {
+            fullColor: primarySvg,
+            monoBlack: variants.monoBlack,
+            monoWhite: variants.monoWhite,
+            monoPrimary: variants.monoPrimary,
+            transparent: primarySvg,
+            recraftImageId: v4Result.imageId,
+          };
           await supabase.from("brand_guides").update({ result }).eq("id", savedGuide.id);
+        } else {
+          const logoImageUrl = await generateAndStoreLogo(
+            savedGuide.id,
+            body.companyName,
+            body.industry,
+            body.mood,
+            primaryColor
+          );
+          if (logoImageUrl) {
+            result.logoImageUrl = logoImageUrl;
+            result.iconSvg = undefined;
+            await supabase.from("brand_guides").update({ result }).eq("id", savedGuide.id);
+          }
         }
+      } catch (err) {
+        // Logo is niet-kritiek: log maar laat generatie slagen
+        console.error("Logo generatie fout (niet-kritiek):", err);
       }
     }
 
