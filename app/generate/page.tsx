@@ -185,6 +185,10 @@ export default function GeneratePage() {
         });
 
         step = "json-parse";
+        const contentType = res.headers.get("content-type") ?? "";
+        if (!contentType.includes("application/json")) {
+          throw new Error("De server heeft te lang geduurd. Probeer het opnieuw.");
+        }
         const data = await res.json();
 
         step = "response-check";
