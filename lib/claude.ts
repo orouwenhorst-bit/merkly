@@ -23,92 +23,72 @@ ${input.description ? `- Beschrijving: ${input.description}` : ""}
 ${input.values ? `- Kernwaarden: ${input.values}` : ""}
 ${input.preferredColor ? `- VOORKEURSKLEUR (verplicht als basis): ${input.preferredColor}` : ""}
 
-Genereer ALLEEN deze velden (niets meer). Schrijf alles in het Nederlands. Vul ALLE velden volledig in — geen lege arrays of lege strings.
-
-LENGTE-REGELS (strikt):
-- mission: max 12 woorden
-- vision: max 12 woorden
-- coreValues descriptions: max 8 woorden per stuk
-- brandStory: max 2 zinnen
-- personalityDescription: max 10 woorden
-- Alle andere tekstvelden: zo kort en krachtig mogelijk
+Genereer ALLEEN de onderstaande JSON. Schrijf alles in het Nederlands. Vul ALLE velden volledig in.
 
 KLEURENPALET: Exact 7 kleuren: 2 primair, 2 secundair, 3 neutraal.
 ${input.preferredColor ? `De EERSTE primaire kleur MOET exact ${input.preferredColor} zijn.` : ""}
-Geef per kleur: creatieve naam, HEX, en category.
+Kleuren moeten harmoniëren als één samenhangend palet. Geen neon of tonaal ongerelateerde kleuren.
 
-KLEURHARMONIE-REGELS (verplicht):
-- Secundaire kleuren moeten harmoniëren met de primaire — kies analoge tinten (±30° op kleurwiel), toon-op-toon variaties, of gedempte complementaire kleuren.
-- GEEN neon, fluorescerend of ongerelateerde kleuren als tweede of secundaire kleur.
-- Alle kleuren moeten samen voelen als één samenhangend palet — alsof ze door één ontwerper bedacht zijn.
-- Vermijd grote toonsprongen (bijv. roze + felblauw, groen + paars) tenzij de sfeer dit expliciet vraagt.
-- Geef neutrale kleuren die passen bij het kleurthema (geen losse grijzen die nergens bij aansluiten).
+TYPOGRAFIE: 2 Google Fonts (display + body). Varieer — geen standaard Inter/Poppins/Montserrat/Roboto.
 
-TYPOGRAFIE: Kies 2 Google Fonts (display + body). VARIEER — geen Inter/Poppins/Montserrat/Roboto tenzij echt passend.
-Vul de typeScale volledig in op basis van de gekozen fonts: H1 (display, 700, 48px), H2 (display, 600, 32px), H3 (display, 600, 24px), body (body, 400, 16px), small (body, 400, 14px).
+ICONKEY: Kies precies één waarde uit deze lijst: ${ICON_KEYS.join(", ")}
 
-Retourneer ALLEEN geldige JSON:
+Retourneer ALLEEN geldige JSON, geen markdown, geen tekst eromheen:
 
 {
   "companyName": "${input.companyName}",
   "strategy": {
-    "mission": "Eén zin",
-    "vision": "Eén zin",
-    "coreValues": [{ "value": "Naam", "description": "Korte uitleg" }],
-    "brandStory": "2-3 zinnen",
+    "mission": "Krachtige missiezin",
+    "vision": "Ambitieuze visiezin",
+    "coreValues": [{ "value": "Naam", "description": "Concrete uitleg in 1 zin" }],
+    "brandStory": "Authentiek merkverhaal in 2-3 zinnen",
     "personas": [],
     "personalityTraits": ["adj1", "adj2", "adj3", "adj4", "adj5"],
-    "personalityDescription": "1 zin"
+    "personalityDescription": "Hoe de persoonlijkheid zich uit in communicatie"
   },
   "colorPalette": {
     "colors": [
-      { "name": "Naam", "hex": "#HEX", "rgb": "", "cmyk": "", "pantone": "", "usage": "Kort", "category": "primary" }
+      { "name": "Merknaam", "hex": "#HEX", "usage": "Gebruik voor...", "category": "primary" }
     ],
-    "ratioGuideline": "",
+    "ratioGuideline": "60% neutraal, 30% primair, 10% accent",
     "accessibility": []
   },
   "typography": {
     "fonts": [
-      { "name": "FontNaam", "category": "display", "weights": [400, 700], "source": "Google Fonts", "googleFontsUrl": "https://fonts.googleapis.com/css2?family=FontNaam:wght@400;700&display=swap", "fallback": "serif", "usage": "Koppen" }
+      { "name": "FontNaam", "category": "display", "weights": [400, 700], "source": "Google Fonts", "googleFontsUrl": "https://fonts.googleapis.com/css2?family=FontNaam:wght@400;700&display=swap", "fallback": "serif", "usage": "Koppen en titels" }
     ],
     "typeScale": [
       { "level": "H1", "fontFamily": "DisplayFontNaam", "weight": 700, "sizePx": 48, "lineHeight": "1.1", "letterSpacing": "-1px", "usage": "Paginatitels" },
-      { "level": "H2", "fontFamily": "DisplayFontNaam", "weight": 600, "sizePx": 32, "lineHeight": "1.2", "letterSpacing": "-0.5px", "usage": "Sectiekoppen" },
-      { "level": "H3", "fontFamily": "DisplayFontNaam", "weight": 600, "sizePx": 24, "lineHeight": "1.3", "letterSpacing": "0px", "usage": "Subkoppen" },
       { "level": "body", "fontFamily": "BodyFontNaam", "weight": 400, "sizePx": 16, "lineHeight": "1.6", "letterSpacing": "0px", "usage": "Lopende tekst" },
-      { "level": "small", "fontFamily": "BodyFontNaam", "weight": 400, "sizePx": 14, "lineHeight": "1.5", "letterSpacing": "0px", "usage": "Bijschriften en metadata" }
+      { "level": "small", "fontFamily": "BodyFontNaam", "weight": 400, "sizePx": 14, "lineHeight": "1.5", "letterSpacing": "0px", "usage": "Bijschriften" }
     ],
     "pairingRationale": "",
-    "googleFontsUrl": ""
+    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=FontNaam:wght@400;700&display=swap"
   },
   "toneOfVoice": {
     "voiceAttributes": ["woord1", "woord2", "woord3", "woord4"],
     "doList": ["Concrete richtlijn 1", "Concrete richtlijn 2", "Concrete richtlijn 3", "Concrete richtlijn 4"],
     "dontList": ["Verbod 1", "Verbod 2", "Verbod 3", "Verbod 4"],
-    "tagline": "Max 6 woorden",
+    "tagline": "Krachtige slogan max 6 woorden",
     "boilerplate": "Standaard bedrijfsbeschrijving van 2 zinnen.",
     "examples": []
   },
   "brandVoiceExamples": {
-    "heroHeadline": "Krachtige websitekop max 8 woorden",
-    "subHeadline": "Ondersteunende ondertitel max 15 woorden",
-    "instagramCaption": "Echte Instagram-caption met emoji en 3 relevante hashtags",
-    "adCopy": "Twee zinnen advertentietekst die aanzet tot actie.",
-    "emailSubjectLine": "E-mailonderwerpregel max 50 tekens",
+    "heroHeadline": "Krachtige websitekop",
+    "subHeadline": "Ondersteunende ondertitel",
+    "instagramCaption": "Instagram-caption met emoji en hashtags",
+    "adCopy": "Twee zinnen advertentietekst.",
+    "emailSubjectLine": "E-mailonderwerpregel",
     "aboutUs": "Over ons alinea van 2-3 zinnen in wij-vorm.",
-    "callToAction": "2-4 woorden CTA"
+    "callToAction": "CTA-tekst"
   },
-  "imageryGuidelines": null,
-  "iconographyGuidelines": null,
-  "graphicElements": null,
   "logoGuidelines": { "doList": [], "dontList": [], "clearSpaceRule": "", "minimumSizes": { "digitalPx": 24, "printMm": 15 } },
-  "usageExamples": null,
-  "iconKey": "een-key-uit-de-lijst: ${ICON_KEYS.join(", ")}"
+  "iconKey": "exacte-key-uit-de-lijst"
 }`;
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 3500,
+    max_tokens: 4000,
     messages: [{ role: "user", content: lightPrompt }],
   });
 
