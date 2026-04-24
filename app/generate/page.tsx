@@ -194,18 +194,8 @@ export default function GeneratePage() {
         step = "response-check";
         if (!res.ok) throw new Error(data.error);
 
-        // Logo genereren op de achtergrond terwijl gebruiker animatie ziet
-        step = "logo-generatie";
-        try {
-          await Promise.race([
-            fetch(`/api/guides/${data.id}/init-logo`, { method: "POST" }),
-            new Promise<Response>((_, reject) =>
-              setTimeout(() => reject(new Error("Logo timeout")), 35000)
-            ),
-          ]);
-        } catch {
-          // Niet-kritiek: logo wordt alsnog geladen via result-pagina
-        }
+        // Logo generatie starten zonder te wachten — klaar als gebruiker result-pagina ziet
+        fetch(`/api/guides/${data.id}/init-logo`, { method: "POST" }).catch(() => {});
 
         step = "navigate";
         setDone(true);
