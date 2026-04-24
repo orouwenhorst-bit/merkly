@@ -33,15 +33,16 @@ export async function POST(req: NextRequest) {
 
     const supabase = createClient();
 
-    // Rate limiting
+    // Subscription check + rate limiting (één call)
+    let isPremiumUser = false;
     if (user) {
-      let isPremium = false;
       try {
-        ({ isPremium } = await getUserSubscription(user.id));
+        const sub = await getUserSubscription(user.id);
+        isPremiumUser = sub.isPremium;
       } catch (err) {
         throw label("subscription-check", err);
       }
-      if (!isPremium) {
+      if (!isPremiumUser) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const { count } = await supabase
@@ -55,17 +56,6 @@ export async function POST(req: NextRequest) {
             { status: 429 }
           );
         }
-      }
-    }
-
-    // Subscription check for generation type
-    let isPremiumUser = false;
-    if (user) {
-      try {
-        const sub = await getUserSubscription(user.id);
-        isPremiumUser = sub.isPremium;
-      } catch (err) {
-        throw label("subscription-type", err);
       }
     }
 
