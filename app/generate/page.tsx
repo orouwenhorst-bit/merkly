@@ -29,13 +29,13 @@ const MOODS = [
 ];
 
 const GENERATION_STEPS = [
-  { label: "Merkidentiteit analyseren", duration: 3000 },
-  { label: "Kleurenpalet samenstellen", duration: 5000 },
-  { label: "Typografie selecteren", duration: 4000 },
-  { label: "Merkverhaal schrijven", duration: 5000 },
-  { label: "Logo ontwerpen", duration: 8000 },
-  { label: "Mockups genereren", duration: 4000 },
-  { label: "Brand guide afronden", duration: 3000 },
+  { label: "Merkidentiteit analyseren", duration: 5000 },
+  { label: "Kleurenpalet samenstellen", duration: 8000 },
+  { label: "Typografie selecteren", duration: 6000 },
+  { label: "Merkverhaal schrijven", duration: 8000 },
+  { label: "Brand guide afronden", duration: 8000 },
+  { label: "Logo genereren met AI", duration: 20000 },
+  { label: "Huisstijl voltooien", duration: 5000 },
 ];
 
 function ProgressOverlay({ companyName, done }: { companyName: string; done: boolean }) {
@@ -193,6 +193,19 @@ export default function GeneratePage() {
 
         step = "response-check";
         if (!res.ok) throw new Error(data.error);
+
+        // Logo genereren op de achtergrond terwijl gebruiker animatie ziet
+        step = "logo-generatie";
+        try {
+          await Promise.race([
+            fetch(`/api/guides/${data.id}/init-logo`, { method: "POST" }),
+            new Promise<Response>((_, reject) =>
+              setTimeout(() => reject(new Error("Logo timeout")), 35000)
+            ),
+          ]);
+        } catch {
+          // Niet-kritiek: logo wordt alsnog geladen via result-pagina
+        }
 
         step = "navigate";
         setDone(true);
