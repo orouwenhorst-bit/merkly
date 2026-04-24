@@ -5,6 +5,7 @@ import BrandGuidePreview from "@/components/BrandGuidePreview";
 import ShareButton from "@/components/ShareButton";
 import AuthButton from "@/components/AuthButton";
 import ClaimBanner from "@/components/ClaimBanner";
+import AutoLogoFetcher from "@/components/AutoLogoFetcher";
 import { notFound } from "next/navigation";
 
 export default async function ResultPage({
@@ -53,6 +54,9 @@ export default async function ResultPage({
 
   return (
     <main className="min-h-screen bg-neutral-50">
+      {/* Auto logo generatie als guide nog geen logo heeft */}
+      <AutoLogoFetcher guideId={id} hasLogo={!!result.logoImageUrl} />
+
       {/* Nav */}
       <nav className="sticky top-0 z-40 bg-white border-b border-neutral-200">
         <div className="max-w-4xl mx-auto flex items-center justify-between px-6 py-4">
