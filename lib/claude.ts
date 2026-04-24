@@ -25,6 +25,14 @@ ${input.preferredColor ? `- VOORKEURSKLEUR (verplicht als basis): ${input.prefer
 
 Genereer ALLEEN deze velden (niets meer). Schrijf alles in het Nederlands. Vul ALLE velden volledig in — geen lege arrays of lege strings.
 
+LENGTE-REGELS (strikt):
+- mission: max 12 woorden
+- vision: max 12 woorden
+- coreValues descriptions: max 8 woorden per stuk
+- brandStory: max 2 zinnen
+- personalityDescription: max 10 woorden
+- Alle andere tekstvelden: zo kort en krachtig mogelijk
+
 KLEURENPALET: Exact 7 kleuren: 2 primair, 2 secundair, 3 neutraal.
 ${input.preferredColor ? `De EERSTE primaire kleur MOET exact ${input.preferredColor} zijn.` : ""}
 Geef per kleur: creatieve naam, HEX, en category.
@@ -100,7 +108,7 @@ Retourneer ALLEEN geldige JSON:
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 3000,
+    max_tokens: 3500,
     messages: [{ role: "user", content: lightPrompt }],
   });
 
