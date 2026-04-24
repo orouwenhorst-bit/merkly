@@ -144,14 +144,6 @@ function LogoMark({ result, size = "md" }: { result: BrandGuideResult; size?: "s
       </div>
     );
   }
-  if (result.iconSvg) {
-    return (
-      <div className={`${sizeMap[size]} bg-white rounded-xl shadow-sm border border-neutral-100 flex items-center justify-center flex-shrink-0 overflow-hidden`}>
-        <div className={`${imgSize[size]} [&_svg]:w-full [&_svg]:h-full`} style={{ color: primary }}
-          dangerouslySetInnerHTML={{ __html: result.iconSvg }} />
-      </div>
-    );
-  }
   if (result.logoImageUrl) {
     return (
       <div className={`${sizeMap[size]} bg-white rounded-xl shadow-sm border border-neutral-100 flex items-center justify-center flex-shrink-0 overflow-hidden`}>
@@ -160,9 +152,15 @@ function LogoMark({ result, size = "md" }: { result: BrandGuideResult; size?: "s
       </div>
     );
   }
+  // Nog geen Recraft logo — toon laadindicator
   return (
-    <div className={`${sizeMap[size]} flex-shrink-0 [&_svg]:w-full [&_svg]:h-full`}
-      dangerouslySetInnerHTML={{ __html: normalizeSvg(result.logoIconSvg) }} />
+    <div className={`${sizeMap[size]} bg-white rounded-xl shadow-sm border border-neutral-100 flex items-center justify-center flex-shrink-0`}
+      title="Logo wordt gegenereerd...">
+      <div className="flex flex-col items-center gap-1">
+        <div className="w-4 h-4 rounded-full border-2 border-neutral-200 border-t-violet-500 animate-spin" />
+        {size === "lg" && <span className="text-[9px] text-neutral-400 text-center leading-tight">Logo wordt<br/>gegenereerd</span>}
+      </div>
+    </div>
   );
 }
 

@@ -100,7 +100,7 @@ Retourneer ALLEEN geldige JSON:
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 4000,
+    max_tokens: 3000,
     messages: [{ role: "user", content: lightPrompt }],
   });
 
@@ -108,8 +108,10 @@ Retourneer ALLEEN geldige JSON:
 
   let raw: Record<string, unknown>;
   try {
-    const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
-    raw = JSON.parse(cleaned);
+    const stripped = text.replace(/```json\n?|\n?```/g, "").trim();
+    // Pak het eerste JSON-object ook als Claude er tekst omheen schrijft
+    const match = stripped.match(/\{[\s\S]*\}/);
+    raw = JSON.parse(match ? match[0] : stripped);
   } catch {
     throw new Error("Claude retourneerde geen geldige JSON: " + text.slice(0, 300));
   }
@@ -142,11 +144,15 @@ Retourneer ALLEEN geldige JSON:
 }
 
 /**
- * FULL generation — two sequential Claude calls to stay within Vercel 60s limit.
- * Call 1: core brand guide via generateBrandGuideLight (~15-20s)
- * Call 2: premium-only sections (personas, imagery, iconography, etc.) (~12-15s)
+ * FULL generation — delegates to light generation to stay within Vercel 60s limit.
+ * Premium sections (personas, imagery, etc.) are loaded separately on the result page.
  */
 export async function generateBrandGuide(input: BrandInput): Promise<BrandGuideResult> {
+  return generateBrandGuideLight(input);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function _generateBrandGuideFull(input: BrandInput): Promise<BrandGuideResult> {
   // Phase 1: core content (reuses light generation — fast and reliable)
   const base = await generateBrandGuideLight(input);
 
