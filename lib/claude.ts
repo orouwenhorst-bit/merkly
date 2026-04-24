@@ -142,10 +142,99 @@ Retourneer ALLEEN geldige JSON:
 }
 
 /**
- * FULL generation — all 11 sections. Only called after payment.
+ * FULL generation — two sequential Claude calls to stay within Vercel 60s limit.
+ * Call 1: core brand guide via generateBrandGuideLight (~15-20s)
+ * Call 2: premium-only sections (personas, imagery, iconography, etc.) (~12-15s)
  */
 export async function generateBrandGuide(input: BrandInput): Promise<BrandGuideResult> {
-  const prompt = `Je bent een senior brand strategist en visueel ontwerper met 15+ jaar ervaring bij top-bureaus zoals Pentagram, Wolff Olins en Kossmann.dejong. Je maakt merkstijlgidsen die strategisch onderbouwd zijn — elke visuele keuze vloeit voort uit de merkstrategie.
+  // Phase 1: core content (reuses light generation — fast and reliable)
+  const base = await generateBrandGuideLight(input);
+
+  // Phase 2: premium-only sections
+  const colors = base.colorPalette?.colors ?? [];
+  const primaryColor = colors.find((c) => c.category === "primary")?.hex ?? "#000000";
+  const personalityTraits = base.brandPersonality ?? [];
+  const voiceAttributes = (base.toneOfVoice as { voiceAttributes?: string[] })?.voiceAttributes ?? [];
+
+  const phase2Prompt = `Je bent een brand strategist. Genereer de premium secties voor dit merk. Schrijf in het Nederlands. Retourneer ALLEEN geldige JSON, geen markdown.
+
+MERK: ${input.companyName}
+BRANCHE: ${input.industry}
+SFEER: ${input.mood}
+DOELGROEP: ${input.targetAudience}
+MERKPERSOONLIJKHEID: ${personalityTraits.join(", ")}
+TOON: ${voiceAttributes.join(", ")}
+PRIMAIRE KLEUR: ${primaryColor}
+
+{
+  "personas": [
+    { "name": "Voornaam", "age": "28", "occupation": "Beroep", "needs": ["behoefte1", "behoefte2"], "frustrations": ["frustratie1", "frustratie2"], "description": "1 zin" },
+    { "name": "Voornaam", "age": "35", "occupation": "Beroep", "needs": ["behoefte1", "behoefte2"], "frustrations": ["frustratie1", "frustratie2"], "description": "1 zin" }
+  ],
+  "imageryGuidelines": {
+    "photoStyle": "1 zin",
+    "colorTreatment": "1 zin",
+    "subjects": "1 zin",
+    "composition": "1 zin",
+    "doList": ["richtlijn 1", "richtlijn 2", "richtlijn 3"],
+    "dontList": ["verbod 1", "verbod 2", "verbod 3"]
+  },
+  "iconographyGuidelines": { "style": "line", "strokeWidth": "1.5px", "cornerStyle": "rounded", "colorUsage": "1 zin" },
+  "graphicElements": { "description": "1 zin", "shapes": "1 zin", "patterns": "1 zin", "usage": "1 zin" },
+  "logoGuidelines": {
+    "doList": ["do 1", "do 2", "do 3", "do 4"],
+    "dontList": ["dont 1", "dont 2", "dont 3", "dont 4"],
+    "clearSpaceRule": "1 zin",
+    "minimumSizes": { "digitalPx": 24, "printMm": 15 }
+  },
+  "usageExamples": {
+    "businessCard": "1 zin",
+    "socialPost": "1 zin",
+    "emailSignature": "1 zin",
+    "letterhead": "1 zin",
+    "presentationSlide": "1 zin",
+    "websiteHeader": "1 zin",
+    "merchandise": "1 zin"
+  }
+}`;
+
+  const phase2Response = await client.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1500,
+    messages: [{ role: "user", content: phase2Prompt }],
+  });
+
+  const phase2Text =
+    phase2Response.content[0].type === "text" ? phase2Response.content[0].text : "";
+
+  let phase2: Record<string, unknown> = {};
+  try {
+    const cleaned = phase2Text.replace(/```json\n?|\n?```/g, "").trim();
+    phase2 = JSON.parse(cleaned);
+  } catch {
+    // Phase 2 mislukt = niet-kritiek, basis guide is al compleet
+    console.error("Phase 2 JSON parse fout:", phase2Text.slice(0, 200));
+  }
+
+  const baseStrategy = (base as unknown as Record<string, unknown>).strategy as Record<string, unknown> ?? {};
+
+  return {
+    ...base,
+    strategy: {
+      ...baseStrategy,
+      ...(phase2.personas ? { personas: phase2.personas } : {}),
+    },
+    imageryGuidelines: (phase2.imageryGuidelines as BrandGuideResult["imageryGuidelines"]) ?? base.imageryGuidelines,
+    iconographyGuidelines: (phase2.iconographyGuidelines as BrandGuideResult["iconographyGuidelines"]) ?? base.iconographyGuidelines,
+    graphicElements: (phase2.graphicElements as BrandGuideResult["graphicElements"]) ?? base.graphicElements,
+    logoGuidelines: (phase2.logoGuidelines as BrandGuideResult["logoGuidelines"]) ?? base.logoGuidelines,
+    usageExamples: (phase2.usageExamples as BrandGuideResult["usageExamples"]) ?? base.usageExamples,
+  } as BrandGuideResult;
+}
+
+// Legacy full prompt kept below for reference — replaced by two-phase generation above
+function _legacyFullPrompt(input: BrandInput): string {
+  return `Je bent een senior brand strategist en visueel ontwerper met 15+ jaar ervaring bij top-bureaus zoals Pentagram, Wolff Olins en Kossmann.dejong. Je maakt merkstijlgidsen die strategisch onderbouwd zijn — elke visuele keuze vloeit voort uit de merkstrategie.
 
 BEDRIJFSGEGEVENS:
 - Naam: ${input.companyName}
@@ -386,51 +475,4 @@ Schrijf alles in het Nederlands. Retourneer ALLEEN geldige JSON, geen markdown.
   },
   "iconKey": "een-key-uit-de-lijst"
 }`;
-
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 3000,
-    messages: [{ role: "user", content: prompt }],
-  });
-
-  const text = response.content[0].type === "text" ? response.content[0].text : "";
-
-  let raw: Record<string, unknown>;
-  try {
-    const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
-    raw = JSON.parse(cleaned);
-  } catch {
-    throw new Error("Claude retourneerde geen geldige JSON: " + text.slice(0, 300));
-  }
-
-  // Cast parsed output
-  const brandGuide = raw as Omit<BrandGuideResult, "logoSvg" | "logoIconSvg" | "brandPatternSvg" | "tagline" | "brandPersonality" | "brandStory"> & { iconKey?: string };
-
-  // Extract colors for logo generation
-  const colors = brandGuide.colorPalette?.colors ?? [];
-  const primary = colors.find(c => c.category === "primary")?.hex ?? "#1a1a1a";
-  const accent = colors.find(c => c.category === "secondary")?.hex ?? colors[1]?.hex ?? "#888888";
-
-  // Generate logos programmatically
-  const logoSvg = generateWordmarkSvg(input.companyName, input.industry, input.mood, primary, accent);
-  const logoIconSvg = generateIconSvg(input.companyName, input.industry, input.mood, primary, accent);
-  const brandPatternSvg = generatePatternSvg(primary, accent);
-
-  const iconSvg = renderIcon(brandGuide.iconKey);
-
-  // Legacy compat aliases
-  const tagline = brandGuide.toneOfVoice?.tagline ?? "";
-  const brandPersonality = brandGuide.strategy?.personalityTraits ?? [];
-  const brandStory = brandGuide.strategy?.brandStory ?? "";
-
-  return {
-    ...brandGuide,
-    iconSvg,
-    logoSvg,
-    logoIconSvg,
-    brandPatternSvg,
-    tagline,
-    brandPersonality,
-    brandStory,
-  };
 }
