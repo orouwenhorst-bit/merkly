@@ -32,9 +32,8 @@ const registeredFonts = new Set<string>();
 async function registerGoogleFont(fontName: string): Promise<boolean> {
   if (registeredFonts.has(fontName)) return true;
   try {
-    // Google Fonts: spaties als + (beide werken maar + is correct)
     const familyParam = fontName.replace(/\s+/g, "+");
-    // Vraag 400 + 700 op met Firefox UA → retourneert .ttf (react-pdf heeft TTF nodig)
+    // Firefox 27 UA → retourneert .ttf (react-pdf heeft TTF nodig)
     const cssUrl = `https://fonts.googleapis.com/css2?family=${familyParam}:wght@400;700&display=swap`;
     const res = await fetch(cssUrl, {
       headers: {
@@ -45,21 +44,43 @@ async function registerGoogleFont(fontName: string): Promise<boolean> {
     if (!res.ok) return false;
     const css = await res.text();
     const blocks = css.split("@font-face");
-    const fonts: { src: string; fontWeight?: number; fontStyle?: "italic" | "normal" }[] = [];
+
+    let regularUrl: string | null = null;
+    let boldUrl: string | null = null;
+
     for (const block of blocks) {
-      // Accepteer zowel .ttf als .woff/.woff2 (browser UA bepaalt wat geretourneerd wordt)
-      const urlMatch = block.match(/url\((https:\/\/[^)]+\.(?:ttf|woff2?))\)/);
-      const weightMatch = block.match(/font-weight:\s*(\d+)/);
-      if (urlMatch) {
-        fonts.push({
-          src: urlMatch[1],
-          fontWeight: weightMatch ? parseInt(weightMatch[1], 10) : 400,
-          fontStyle: "normal",
-        });
+      // Alleen TTF accepteren — react-pdf kan geen woff/woff2 renderen
+      const urlMatch = block.match(/url\((https:\/\/[^)]+\.ttf)\)/);
+      if (!urlMatch) continue;
+      const src = urlMatch[1];
+      // font-weight kan "400", "700" of variabel zijn ("100 900")
+      const weightMatch = block.match(/font-weight:\s*(\d+)(?:\s+(\d+))?/);
+      if (weightMatch) {
+        const w1 = parseInt(weightMatch[1], 10);
+        const w2 = weightMatch[2] ? parseInt(weightMatch[2], 10) : w1;
+        if (w2 - w1 > 100) {
+          // Variabele font: gebruik dezelfde URL voor regular en bold
+          regularUrl = regularUrl ?? src;
+          boldUrl = boldUrl ?? src;
+        } else if (w1 >= 600) {
+          boldUrl = src;
+        } else {
+          regularUrl = regularUrl ?? src;
+        }
+      } else {
+        regularUrl = regularUrl ?? src;
       }
     }
-    if (fonts.length === 0) return false;
-    Font.register({ family: fontName, fonts });
+
+    if (!regularUrl) return false;
+
+    Font.register({
+      family: fontName,
+      fonts: [
+        { src: regularUrl, fontWeight: 400 },
+        { src: boldUrl ?? regularUrl, fontWeight: 700 },
+      ],
+    });
     registeredFonts.add(fontName);
     return true;
   } catch (err) {
@@ -464,50 +485,50 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
         <PageFooter label="Logo: Primair" num="04" styles={styles} />
       </Page>
 
-      {/* ═══════ PAGE 5: LOGO VARIATIES ═══════ */}
+      {/* ═══════ PAGE 5: LOGO VARIATIES — basis ═══════ */}
       <Page size="A4" style={styles.page}>
         <SectionHead num="02.1: VARIANTEN" title="Logo-variaties" subtitle="Verschillende toepassingen voor verschillende contexten" styles={styles} />
 
         {/* Horizontal lockup */}
-        <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", flexDirection: "row", gap: 16, minHeight: 130 }]}>
+        <View wrap={false} style={{ width: "100%", height: 140, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", borderRadius: 8, padding: 24, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16 }}>
           {renderLogo("sm")}
-          <View>
-            <Text style={{ fontSize: 20, fontWeight: 700, color: primary, fontFamily: df }}>{result.companyName}</Text>
-            <Text style={{ fontSize: 9, color: "#71717a", marginTop: 2 }}>{result.toneOfVoice?.tagline ?? result.tagline}</Text>
+          <View style={{ flexDirection: "column", justifyContent: "center" }}>
+            <Text style={{ fontSize: 20, fontWeight: 700, color: primary, fontFamily: df, lineHeight: 1.2 }}>{result.companyName}</Text>
+            <Text style={{ fontSize: 9, color: "#71717a", marginTop: 6, fontFamily: bf, lineHeight: 1.3 }}>{result.toneOfVoice?.tagline ?? result.tagline}</Text>
           </View>
         </View>
-        <Text style={styles.logoLabel}>Horizontale lockup</Text>
+        <Text style={[styles.logoLabel, { marginBottom: 16 }]}>Horizontale lockup</Text>
 
-        {/* 2×2 grid: vertical + wordmark + on brand + on dark */}
-        <View wrap={false} style={[styles.grid2, { marginTop: 20 }]}>
-          <View style={{ flex: 1, width: "50%" }}>
-            <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", minHeight: 150, flex: 0 }]}>
+        {/* Verticale lockup + Woordmerk */}
+        <View wrap={false} style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <View style={{ height: 160, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", borderRadius: 8, padding: 20, alignItems: "center", justifyContent: "center" }}>
               {renderLogo("sm")}
-              <Text style={{ fontSize: 14, fontWeight: 700, color: primary, marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
+              <Text style={{ fontSize: 14, fontWeight: 700, color: primary, marginTop: 10, fontFamily: df, lineHeight: 1.2 }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Verticale lockup</Text>
           </View>
-          <View style={{ flex: 1, width: "50%" }}>
-            <View style={[styles.logoBlock, { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", minHeight: 150, flex: 0 }]}>
-              <Text style={{ fontSize: 22, fontWeight: 700, color: primary, fontFamily: df, letterSpacing: -0.5 }}>{result.companyName}</Text>
+          <View style={{ flex: 1 }}>
+            <View style={{ height: 160, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e5e5e5", borderRadius: 8, padding: 20, alignItems: "center", justifyContent: "center" }}>
+              <Text style={{ fontSize: 22, fontWeight: 700, color: primary, fontFamily: df, letterSpacing: -0.5, lineHeight: 1.2 }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Woordmerk</Text>
           </View>
         </View>
-        <View wrap={false} style={[styles.grid2, { marginTop: 8 }]}>
-          <View style={{ flex: 1, width: "50%" }}>
-            <View style={[styles.logoBlock, { backgroundColor: primary, minHeight: 150, flex: 0 }]}>
-              {/* Altijd wit logo op gekleurde achtergrond */}
+
+        {/* Kleur-varianten op nieuwe rij met meer ruimte */}
+        <View wrap={false} style={{ flexDirection: "row", gap: 12, marginTop: 18 }}>
+          <View style={{ flex: 1 }}>
+            <View style={{ height: 160, backgroundColor: primary, borderRadius: 8, padding: 20, alignItems: "center", justifyContent: "center" }}>
               {renderLogo("sm", logoWhiteUri)}
-              <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
+              <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df, lineHeight: 1.2 }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Op merkkleur</Text>
           </View>
-          <View style={{ flex: 1, width: "50%" }}>
-            <View style={[styles.logoBlock, { backgroundColor: "#0a0a0a", minHeight: 150, flex: 0 }]}>
-              {/* Altijd wit logo op donkere achtergrond */}
+          <View style={{ flex: 1 }}>
+            <View style={{ height: 160, backgroundColor: "#0a0a0a", borderRadius: 8, padding: 20, alignItems: "center", justifyContent: "center" }}>
               {renderLogo("sm", logoWhiteUri)}
-              <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df }}>{result.companyName}</Text>
+              <Text style={{ fontSize: 14, fontWeight: 700, color: "#ffffff", marginTop: 10, fontFamily: df, lineHeight: 1.2 }}>{result.companyName}</Text>
             </View>
             <Text style={styles.logoLabel}>Op donkere achtergrond</Text>
           </View>
@@ -789,8 +810,8 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
             <Text style={styles.copyText}>{result.brandVoiceExamples.instagramCaption}</Text>
           </View>
 
-          <View style={{ padding: 18, backgroundColor: accent, borderRadius: 8, alignItems: "center", marginTop: 4 }}>
-            <Text style={{ fontSize: 8, fontWeight: 700, color: isDark(accent) ? "#ffffff99" : "#00000099", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6 }}>Call to action</Text>
+          <View wrap={false} style={{ padding: 18, backgroundColor: accent, borderRadius: 8, alignItems: "center", marginTop: 4 }}>
+            <Text style={{ fontSize: 8, fontWeight: 700, color: isDark(accent) ? "#ffffff99" : "#00000099", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 6, fontFamily: bf }}>Call to action</Text>
             <Text style={{ fontSize: 14, fontWeight: 700, color: isDark(accent) ? "#ffffff" : "#0a0a0a", fontFamily: df }}>{result.brandVoiceExamples.callToAction}</Text>
           </View>
           <PageFooter label="Brand voice" num="12" styles={styles} />
@@ -798,70 +819,104 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
       )}
 
       {/* ═══════ PAGE 13: BEELDTAAL & ICONOGRAFIE ═══════ */}
-      <Page size="A4" style={styles.page}>
-        <SectionHead num="07: BEELD" title="Beeldtaal & Iconografie" subtitle="Richtlijnen voor fotografie, illustraties en iconen" styles={styles} />
+      {(() => {
+        const traits = result.strategy?.personalityTraits ?? [];
+        const moodWord = traits[0] ?? "authentiek";
+        const imagery = result.imageryGuidelines ?? {
+          photoStyle: `Heldere, ${moodWord}e fotografie met natuurlijk licht en menselijke focus.`,
+          colorTreatment: `Subtiele toon-op-toon kleurbehandeling die aansluit bij het merkpalet — vermijd te verzadigde of geel-getinte beelden.`,
+          subjects: `Echte mensen en authentieke momenten die de waarden van ${result.companyName} weerspiegelen.`,
+          composition: "Veel witruimte, duidelijke focuspunten en een centrale of regel-van-derden compositie.",
+          doList: [
+            "Gebruik natuurlijk daglicht waar mogelijk",
+            "Kies onderwerpen die de doelgroep herkent",
+            "Houd de kleurtemperatuur consistent",
+          ],
+          dontList: [
+            "Geen generieke stockfoto's met clichés",
+            "Geen overdreven filters of HDR-effecten",
+            "Geen rommelige of drukke achtergronden",
+          ],
+        };
+        const iconography = result.iconographyGuidelines ?? {
+          style: "Line icons met consistente lijndikte",
+          strokeWidth: "1.5px",
+          cornerStyle: "Lichtjes afgeronde hoeken (2px radius)",
+          colorUsage: `Gebruik primaire merkkleur voor actieve iconen, donker neutraal voor secundair en licht grijs voor uitgeschakelde staten.`,
+        };
+        return (
+          <Page size="A4" style={styles.page}>
+            <SectionHead num="07: BEELD" title="Beeldtaal & Iconografie" subtitle="Richtlijnen voor fotografie, illustraties en iconen" styles={styles} />
 
-        {/* Fotografie */}
-        {result.imageryGuidelines && (
-          <View style={{ marginBottom: 24 }}>
-            <Text style={styles.label}>Fotografie</Text>
-            <View style={styles.twoCol}>
-              <View style={styles.col}>
-                <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Stijl</Text>
-                <Text style={{ fontSize: 10, color: "#3f3f46", lineHeight: 1.5, fontFamily: bf }}>{result.imageryGuidelines.photoStyle}</Text>
-                <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, marginTop: 12, fontFamily: bf }}>Kleurbehandeling</Text>
-                <Text style={{ fontSize: 10, color: "#3f3f46", lineHeight: 1.5, fontFamily: bf }}>{result.imageryGuidelines.colorTreatment}</Text>
-              </View>
-              <View style={styles.col}>
-                <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Onderwerpen</Text>
-                <Text style={{ fontSize: 10, color: "#3f3f46", lineHeight: 1.5, fontFamily: bf }}>{result.imageryGuidelines.subjects}</Text>
-                <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, marginTop: 12, fontFamily: bf }}>Compositie</Text>
-                <Text style={{ fontSize: 10, color: "#3f3f46", lineHeight: 1.5, fontFamily: bf }}>{result.imageryGuidelines.composition}</Text>
-              </View>
-            </View>
-
-            <View wrap={false} style={[styles.grid2, { marginTop: 16 }]}>
-              <View style={[styles.guidelineBox, styles.guidelineBoxDo]}>
-                <Text style={[styles.guidelineTitle, styles.guidelineTitleDo]}>Wel</Text>
-                {result.imageryGuidelines.doList?.map((item, i) => (
-                  <Text key={i} style={styles.guidelineItem}>- {item}</Text>
-                ))}
-              </View>
-              <View style={[styles.guidelineBox, styles.guidelineBoxDont]}>
-                <Text style={[styles.guidelineTitle, styles.guidelineTitleDont]}>Niet</Text>
-                {result.imageryGuidelines.dontList?.map((item, i) => (
-                  <Text key={i} style={styles.guidelineItem}>- {item}</Text>
-                ))}
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* Iconografie */}
-        {result.iconographyGuidelines && (
-          <View>
-            <Text style={styles.label}>Iconografie</Text>
-            <View style={{ padding: 16, backgroundColor: "#fafafa", borderRadius: 8 }}>
-              <View wrap={false} style={[styles.grid2, { marginBottom: 0 }]}>
-                <View style={{ flex: 1 }}>
+            {/* Fotografie */}
+            <View style={{ marginBottom: 20 }}>
+              <Text style={styles.label}>Fotografie</Text>
+              <View style={styles.twoCol}>
+                <View style={styles.col}>
                   <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Stijl</Text>
-                  <Text style={{ fontSize: 10, color: "#3f3f46", fontFamily: bf }}>{result.iconographyGuidelines.style}</Text>
+                  <Text style={{ fontSize: 10, color: "#3f3f46", lineHeight: 1.5, fontFamily: bf }}>{imagery.photoStyle}</Text>
+                  <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, marginTop: 12, fontFamily: bf }}>Kleurbehandeling</Text>
+                  <Text style={{ fontSize: 10, color: "#3f3f46", lineHeight: 1.5, fontFamily: bf }}>{imagery.colorTreatment}</Text>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Lijndikte</Text>
-                  <Text style={{ fontSize: 10, color: "#3f3f46", fontFamily: bf }}>{result.iconographyGuidelines.strokeWidth}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Hoeken</Text>
-                  <Text style={{ fontSize: 10, color: "#3f3f46", fontFamily: bf }}>{result.iconographyGuidelines.cornerStyle}</Text>
+                <View style={styles.col}>
+                  <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Onderwerpen</Text>
+                  <Text style={{ fontSize: 10, color: "#3f3f46", lineHeight: 1.5, fontFamily: bf }}>{imagery.subjects}</Text>
+                  <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, marginTop: 12, fontFamily: bf }}>Compositie</Text>
+                  <Text style={{ fontSize: 10, color: "#3f3f46", lineHeight: 1.5, fontFamily: bf }}>{imagery.composition}</Text>
                 </View>
               </View>
-              <Text style={{ fontSize: 10, color: "#3f3f46", marginTop: 12, lineHeight: 1.5, fontFamily: bf }}>{result.iconographyGuidelines.colorUsage}</Text>
+
+              <View wrap={false} style={[styles.grid2, { marginTop: 16 }]}>
+                <View style={[styles.guidelineBox, styles.guidelineBoxDo]}>
+                  <Text style={[styles.guidelineTitle, styles.guidelineTitleDo]}>Wel</Text>
+                  {imagery.doList?.map((item, i) => (
+                    <Text key={i} style={styles.guidelineItem}>- {item}</Text>
+                  ))}
+                </View>
+                <View style={[styles.guidelineBox, styles.guidelineBoxDont]}>
+                  <Text style={[styles.guidelineTitle, styles.guidelineTitleDont]}>Niet</Text>
+                  {imagery.dontList?.map((item, i) => (
+                    <Text key={i} style={styles.guidelineItem}>- {item}</Text>
+                  ))}
+                </View>
+              </View>
             </View>
-          </View>
-        )}
-        <PageFooter label="Beeldtaal" num="13" styles={styles} />
-      </Page>
+
+            {/* Iconografie */}
+            <View wrap={false}>
+              <Text style={styles.label}>Iconografie</Text>
+              <View style={{ padding: 16, backgroundColor: "#fafafa", borderRadius: 8 }}>
+                <View style={{ flexDirection: "row", gap: 12, marginBottom: 0 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Stijl</Text>
+                    <Text style={{ fontSize: 10, color: "#3f3f46", fontFamily: bf, lineHeight: 1.4 }}>{iconography.style}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Lijndikte</Text>
+                    <Text style={{ fontSize: 10, color: "#3f3f46", fontFamily: bf, lineHeight: 1.4 }}>{iconography.strokeWidth}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 9, fontWeight: 700, color: "#52525b", marginBottom: 4, fontFamily: bf }}>Hoeken</Text>
+                    <Text style={{ fontSize: 10, color: "#3f3f46", fontFamily: bf, lineHeight: 1.4 }}>{iconography.cornerStyle}</Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 10, color: "#3f3f46", marginTop: 12, lineHeight: 1.5, fontFamily: bf }}>{iconography.colorUsage}</Text>
+              </View>
+
+              {/* Voorbeeld-iconen palet */}
+              <View style={{ flexDirection: "row", gap: 12, marginTop: 14, justifyContent: "center" }}>
+                {[primary, accent, "#71717a", "#0a0a0a"].map((c, i) => (
+                  <View key={i} style={{ width: 44, height: 44, borderRadius: 8, borderWidth: 1.5, borderColor: c, alignItems: "center", justifyContent: "center" }}>
+                    <View style={{ width: 18, height: 18, borderRadius: 9, borderWidth: 1.5, borderColor: c }} />
+                  </View>
+                ))}
+              </View>
+              <Text style={{ fontSize: 8, color: "#a1a1aa", marginTop: 8, textAlign: "center", fontFamily: bf }}>Voorbeeld iconenstijl in merkkleuren</Text>
+            </View>
+            <PageFooter label="Beeldtaal" num="13" styles={styles} />
+          </Page>
+        );
+      })()}
 
       {/* ═══════ PAGE 14: GRAFISCHE ELEMENTEN ═══════ */}
       {result.graphicElements && (
@@ -898,10 +953,10 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
         <View wrap={false} style={[styles.grid2, { marginBottom: 24 }]}>
           <View style={{ flex: 1, aspectRatio: 1.8, backgroundColor: primary, borderRadius: 8, padding: 16, justifyContent: "space-between" }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              {renderLogo("sm")}
+              {renderLogo("sm", logoWhiteUri)}
               <Text style={{ color: "#ffffff", fontSize: 11, fontWeight: 700, fontFamily: df }}>{result.companyName}</Text>
             </View>
-            <Text style={{ color: "#ffffff99", fontSize: 8 }}>{result.toneOfVoice?.tagline ?? result.tagline}</Text>
+            <Text style={{ color: "#ffffff99", fontSize: 8, fontFamily: bf }}>{result.toneOfVoice?.tagline ?? result.tagline}</Text>
           </View>
           <View style={{ flex: 1, aspectRatio: 1.8, backgroundColor: "#fafafa", borderRadius: 8, padding: 16, borderLeftWidth: 3, borderLeftColor: primary, justifyContent: "center" }}>
             <Text style={{ fontSize: 10, fontWeight: 700, color: "#0a0a0a", marginBottom: 2 }}>Voornaam Achternaam</Text>
@@ -957,6 +1012,7 @@ function BrandBookDocument({ result, logoDataUri, logoWhiteUri, logoPrimaryUri, 
           displayFont: df,
           bodyFont: bf,
           logoDataUri,
+          logoWhiteUri,
           isDark,
         };
         return (

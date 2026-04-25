@@ -18,6 +18,7 @@ export type MockupProps = {
   displayFont: string;
   bodyFont: string;
   logoDataUri: string | null;
+  logoWhiteUri: string | null;
   isDark: (hex: string) => boolean;
 };
 
@@ -48,7 +49,7 @@ export function InstagramPostMockup(p: MockupProps) {
       </View>
       {/* Post content */}
       <View style={{ backgroundColor: p.primary, aspectRatio: 1, width: "100%", padding: 30, justifyContent: "center", alignItems: "center" }}>
-        <Logo src={p.logoDataUri} size={48} fallbackColor={p.isDark(p.primary) ? "#ffffff33" : "#00000022"} fallbackInitial={p.companyName[0]} displayFont={p.displayFont} />
+        <Logo src={p.isDark(p.primary) ? (p.logoWhiteUri ?? p.logoDataUri) : p.logoDataUri} size={48} fallbackColor={p.isDark(p.primary) ? "#ffffff33" : "#00000022"} fallbackInitial={p.companyName[0]} displayFont={p.displayFont} />
         <Text style={{ fontSize: 16, fontWeight: 700, color: p.isDark(p.primary) ? "#ffffff" : "#0a0a0a", fontFamily: p.displayFont, marginTop: 12, textAlign: "center" }}>
           {p.tagline}
         </Text>
@@ -160,7 +161,7 @@ export function PresentationSlideMockup(p: MockupProps) {
       {/* Top bar with logo */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <Logo src={p.logoDataUri} size={20} fallbackColor={p.primary} fallbackInitial={p.companyName[0]} displayFont={p.displayFont} />
+          <Logo src={p.logoWhiteUri ?? p.logoDataUri} size={20} fallbackColor={p.primary} fallbackInitial={p.companyName[0]} displayFont={p.displayFont} />
           <Text style={{ fontSize: 9, fontWeight: 700, color: "#ffffff", fontFamily: p.displayFont }}>{p.companyName}</Text>
         </View>
         <View style={{ width: 40, height: 3, backgroundColor: p.primary, borderRadius: 2 }} />
@@ -194,7 +195,7 @@ export function MerchandiseMockup(p: MockupProps) {
         <View style={{ position: "absolute", top: 0, width: 40, height: 12, backgroundColor: p.lightNeutral, borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }} />
         {/* Logo on shirt */}
         <View style={{ marginTop: 10, alignItems: "center" }}>
-          <Logo src={p.logoDataUri} size={40} fallbackColor={p.primary} fallbackInitial={p.companyName[0]} displayFont={p.displayFont} />
+          <Logo src={p.logoWhiteUri ?? p.logoDataUri} size={40} fallbackColor="#ffffff33" fallbackInitial={p.companyName[0]} displayFont={p.displayFont} />
           <Text style={{ fontSize: 8, fontWeight: 700, color: "#ffffff", fontFamily: p.displayFont, marginTop: 6 }}>{p.companyName}</Text>
         </View>
       </View>
@@ -214,7 +215,7 @@ export function CoffeeCupMockup(p: MockupProps) {
       <View style={{ width: 80, height: 100, backgroundColor: "#ffffff", borderRadius: 4, borderBottomLeftRadius: 8, borderBottomRightRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#e5e5e5", position: "relative" }}>
         {/* Sleeve */}
         <View style={{ position: "absolute", top: 25, left: 0, right: 0, height: 35, backgroundColor: p.primary, alignItems: "center", justifyContent: "center" }}>
-          <Logo src={p.logoDataUri} size={20} fallbackColor={p.isDark(p.primary) ? "#ffffff33" : "#00000022"} fallbackInitial={p.companyName[0]} displayFont={p.displayFont} />
+          <Logo src={p.isDark(p.primary) ? (p.logoWhiteUri ?? p.logoDataUri) : p.logoDataUri} size={20} fallbackColor={p.isDark(p.primary) ? "#ffffff33" : "#00000022"} fallbackInitial={p.companyName[0]} displayFont={p.displayFont} />
         </View>
         {/* Lid */}
         <View style={{ position: "absolute", top: -8, width: 88, height: 10, backgroundColor: p.darkNeutral, borderRadius: 2 }} />
