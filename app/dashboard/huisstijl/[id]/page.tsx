@@ -13,6 +13,12 @@ import {
   SloganCycler,
   LogoRegenerateButton,
 } from "@/components/dashboard/HuisstijlDetailActions";
+import {
+  TypographyRegenerator,
+  ColorPaletteRegenerator,
+  StrategyRegenerator,
+  ToneRegenerator,
+} from "@/components/dashboard/SectionRegenerators";
 import { recolorSvgToWhite } from "@/lib/svg-processing";
 import type { BrandGuideResult } from "@/types/brand";
 
@@ -271,9 +277,15 @@ export default async function HuisstijlDetailPage({
           {/* Kleurenpalet */}
           {colors.length > 0 && (
             <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-6">
-              <h2 className="text-base font-semibold text-white mb-4">
-                Kleurenpalet
-              </h2>
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <h2 className="text-base font-semibold text-white">
+                  Kleurenpalet
+                </h2>
+                <ColorPaletteRegenerator
+                  guideId={guide.id}
+                  isPremiumUser={isPremiumUser}
+                />
+              </div>
               <div className="space-y-2">
                 {colors.map((color) => (
                   <div
@@ -307,9 +319,15 @@ export default async function HuisstijlDetailPage({
           {/* Typografie */}
           {fonts.length > 0 && (
             <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-6">
-              <h2 className="text-base font-semibold text-white mb-4">
-                Typografie
-              </h2>
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <h2 className="text-base font-semibold text-white">
+                  Typografie
+                </h2>
+                <TypographyRegenerator
+                  guideId={guide.id}
+                  isPremiumUser={isPremiumUser}
+                />
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {fonts.map((font) => (
                   <div
@@ -380,6 +398,89 @@ export default async function HuisstijlDetailPage({
                   </p>
                   <p className="text-xs text-neutral-400 leading-relaxed">
                     {result.typography.pairingRationale}
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Tone of voice */}
+          {result?.toneOfVoice && (
+            <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-6">
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <h2 className="text-base font-semibold text-white">
+                  Tone of voice
+                </h2>
+                <ToneRegenerator
+                  guideId={guide.id}
+                  isPremiumUser={isPremiumUser}
+                />
+              </div>
+
+              {result.toneOfVoice.voiceAttributes?.length > 0 && (
+                <div className="mb-5">
+                  <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">
+                    Stem-attributen
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {result.toneOfVoice.voiceAttributes.map((a) => (
+                      <span
+                        key={a}
+                        className="text-[11px] px-2.5 py-1 rounded-full border border-neutral-700 text-neutral-300"
+                      >
+                        {a}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {result.toneOfVoice.doList?.length > 0 && (
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
+                    <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">
+                      Wel doen
+                    </p>
+                    <ul className="space-y-1.5">
+                      {result.toneOfVoice.doList.map((item, i) => (
+                        <li
+                          key={i}
+                          className="text-xs text-neutral-300 leading-relaxed flex gap-2"
+                        >
+                          <span className="text-emerald-500 shrink-0">✓</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {result.toneOfVoice.dontList?.length > 0 && (
+                  <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
+                    <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">
+                      Niet doen
+                    </p>
+                    <ul className="space-y-1.5">
+                      {result.toneOfVoice.dontList.map((item, i) => (
+                        <li
+                          key={i}
+                          className="text-xs text-neutral-300 leading-relaxed flex gap-2"
+                        >
+                          <span className="text-rose-500 shrink-0">✕</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {result.toneOfVoice.boilerplate && (
+                <div className="mt-4 p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
+                  <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">
+                    Boilerplate
+                  </p>
+                  <p className="text-xs text-neutral-400 leading-relaxed italic">
+                    &ldquo;{result.toneOfVoice.boilerplate}&rdquo;
                   </p>
                 </div>
               )}
@@ -456,9 +557,15 @@ export default async function HuisstijlDetailPage({
           {/* Merkstrategie */}
           {result?.strategy && (
             <section className="bg-neutral-900/40 border border-neutral-800 rounded-2xl p-5">
-              <h2 className="text-base font-semibold text-white mb-4">
-                Merkstrategie
-              </h2>
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <h2 className="text-base font-semibold text-white">
+                  Merkstrategie
+                </h2>
+                <StrategyRegenerator
+                  guideId={guide.id}
+                  isPremiumUser={isPremiumUser}
+                />
+              </div>
               <div className="space-y-4">
                 {result.strategy.mission && (
                   <div>
