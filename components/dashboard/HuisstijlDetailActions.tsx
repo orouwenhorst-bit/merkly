@@ -446,14 +446,19 @@ export function LogoRegenerateButton({
   currentLogoVariants: LogoVariants | null;
 }) {
   const router = useRouter();
-  const [phase, setPhase] = useState<"idle" | "loading" | "comparing">("idle");
+  const [phase, setPhase] = useState<"idle" | "describing" | "loading" | "comparing">("idle");
   const [saving, setSaving] = useState(false);
   const [newVariants, setNewVariants] = useState<LogoVariants | null>(null);
+  const [description, setDescription] = useState("");
 
   async function generate() {
     setPhase("loading");
     try {
-      const res = await fetch(`/api/guides/${guideId}/regenerate-logo`, { method: "POST" });
+      const res = await fetch(`/api/guides/${guideId}/regenerate-logo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userDescription: description.trim() || undefined }),
+      });
       if (!res.ok) throw new Error();
       const { logoVariants } = await res.json();
       setNewVariants(logoVariants);
@@ -564,23 +569,61 @@ export function LogoRegenerateButton({
     );
   }
 
+  if (phase === "describing") {
+    return (
+      <div className="mt-2 bg-neutral-900 border border-violet-500/30 rounded-xl p-4 space-y-3">
+        <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">Nieuw logo genereren</p>
+        <div>
+          <label className="block text-[10px] text-neutral-400 mb-1.5">
+            Wat heb je in gedachte? <span className="text-neutral-600">(optioneel)</span>
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); generate(); } }}
+            placeholder="bijv. een eenvoudige zon, geometrische driehoek, klaverblad…"
+            rows={2}
+            maxLength={120}
+            className="w-full bg-neutral-800 border border-neutral-700 focus:border-violet-500/60 rounded-lg px-3 py-2 text-[11px] text-neutral-200 placeholder:text-neutral-600 resize-none outline-none transition-colors"
+          />
+          <p className="text-right text-[9px] text-neutral-600 mt-0.5">{description.length}/120</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={generate}
+            className="flex-1 text-[11px] font-semibold bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-2 transition-colors"
+          >
+            ↻ Genereer logo
+          </button>
+          <button
+            onClick={() => { setPhase("idle"); setDescription(""); }}
+            className="text-[11px] text-neutral-500 hover:text-neutral-300 border border-neutral-700 rounded-lg px-3 py-2 transition-colors"
+          >
+            Annuleer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "loading") {
+    return (
+      <button disabled className="inline-flex items-center gap-1.5 text-[11px] font-medium text-violet-300 border border-violet-500/30 rounded-full px-2.5 py-1 opacity-50">
+        <svg className="w-3 h-3 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        Genereren...
+      </button>
+    );
+  }
+
   return (
     <button
-      onClick={generate}
-      disabled={phase === "loading"}
-      className="inline-flex items-center gap-1.5 text-[11px] font-medium text-violet-300 hover:text-violet-200 border border-violet-500/30 hover:border-violet-400/50 rounded-full px-2.5 py-1 transition-colors disabled:opacity-50"
+      onClick={() => setPhase("describing")}
+      className="inline-flex items-center gap-1.5 text-[11px] font-medium text-violet-300 hover:text-violet-200 border border-violet-500/30 hover:border-violet-400/50 rounded-full px-2.5 py-1 transition-colors"
     >
-      {phase === "loading" ? (
-        <>
-          <svg className="w-3 h-3 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          Genereren...
-        </>
-      ) : (
-        <>↻ Nieuw logo</>
-      )}
+      ↻ Nieuw logo
     </button>
   );
 }

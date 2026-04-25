@@ -9,11 +9,13 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const body = await req.json().catch(() => ({}));
+    const userDescription: string | undefined = body.userDescription || undefined;
 
     const serverClient = await createServerClient();
     const {
@@ -64,7 +66,8 @@ export async function POST(
       guide.industry,
       guide.mood,
       primaryColor,
-      brandPersonality
+      brandPersonality,
+      userDescription,
     );
 
     if (!v4Result)

@@ -37,6 +37,7 @@ function buildLogoPrompt(
   mood: string,
   primaryColor: string,
   brandPersonality: string[],
+  userDescription?: string,
 ): string {
   const industryLower = industry.toLowerCase();
   let visualConcept = "an abstract geometric symbol";
@@ -47,13 +48,18 @@ function buildLogoPrompt(
     }
   }
 
-  // Use personality traits to steer visual direction
   const personalityHint = brandPersonality.length > 0
     ? `style reflects: ${brandPersonality.slice(0, 3).join(", ")}`
     : "";
 
+  // Gebruikersbeschrijving gaat vóór de standaard prompt zodat Recraft er prioriteit aan geeft
+  const userHint = userDescription?.trim()
+    ? `incorporating: ${userDescription.trim()}`
+    : "";
+
   return [
     `flat geometric brand symbol of ${visualConcept}`,
+    userHint,
     `solid ${primaryColor} on white background`,
     `minimal, single shape, centered, isolated`,
     `no text, no letters, no words, no frame, no outline, no background patterns`,
@@ -83,11 +89,12 @@ export async function generateLogoSvg(
   mood: string,
   primaryColor: string,
   brandPersonality: string[] = [],
+  userDescription?: string,
 ): Promise<LogoGenerationResult | null> {
   if (!process.env.RECRAFT_API_KEY) return null;
 
   try {
-    const prompt = buildLogoPrompt(industry, mood, primaryColor, brandPersonality);
+    const prompt = buildLogoPrompt(industry, mood, primaryColor, brandPersonality, userDescription);
 
     const res = await fetch(RECRAFT_API, {
       method: "POST",
