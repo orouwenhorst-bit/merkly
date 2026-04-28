@@ -35,7 +35,7 @@ const GENERATION_STEPS = [
   { label: "Typografie selecteren", duration: 6000 },
   { label: "Merkverhaal schrijven", duration: 8000 },
   { label: "Brand guide afronden", duration: 8000 },
-  { label: "Logo genereren met AI", duration: 20000 },
+  { label: "Logo generatie voorbereiden", duration: 20000 },
   { label: "Huisstijl voltooien", duration: 5000 },
 ];
 
@@ -169,37 +169,70 @@ export default function GeneratePage() {
       setLoading(true);
       setError("");
 
-      let step = "start";
       try {
-        step = "fetch";
         const res = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         });
 
-        step = "json-parse";
-        const contentType = res.headers.get("content-type") ?? "";
-        if (!contentType.includes("application/json")) {
-          throw new Error("De server heeft te lang geduurd. Probeer het opnieuw.");
+        // Fast error responses (400, 429, 500) come back as JSON
+        if (!res.ok || !res.body) {
+          const data = await res.json().catch(() => ({ error: "Generatie mislukt" }));
+          if (data.upgrade) {
+            window.location.href = "/upgrade";
+            return;
+          }
+          throw new Error(data.error || "Generatie mislukt");
         }
-        const data = await res.json();
 
-        step = "response-check";
-        if (!res.ok) throw new Error(data.error);
+        // Success path: server sends SSE events while generating
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
 
-        // Logo generatie starten zonder te wachten — klaar als gebruiker result-pagina ziet
-        fetch(`/api/guides/${data.id}/init-logo`, { method: "POST" }).catch(() => {});
+        outer: while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        step = "navigate";
-        setDone(true);
-        await new Promise((r) => setTimeout(r, 700));
-        window.location.href = `/result/${data.id}`;
+          buffer += decoder.decode(value, { stream: true });
+
+          // Parse complete SSE events (delimited by \n\n)
+          let boundary: number;
+          while ((boundary = buffer.indexOf("\n\n")) !== -1) {
+            const chunk = buffer.slice(0, boundary);
+            buffer = buffer.slice(boundary + 2);
+
+            let eventName = "";
+            let dataStr = "";
+            for (const line of chunk.split("\n")) {
+              if (line.startsWith("event: ")) eventName = line.slice(7).trim();
+              else if (line.startsWith("data: ")) dataStr = line.slice(6).trim();
+            }
+
+            if (!eventName || !dataStr) continue;
+
+            if (eventName === "error") {
+              const parsed = JSON.parse(dataStr);
+              throw new Error(parsed.error || "Generatie mislukt");
+            }
+
+            if (eventName === "done") {
+              const parsed = JSON.parse(dataStr);
+              fetch(`/api/guides/${parsed.id}/init-logo`, { method: "POST" }).catch(() => {});
+              setDone(true);
+              await new Promise((r) => setTimeout(r, 700));
+              window.location.href = `/result/${parsed.id}`;
+              break outer;
+            }
+            // "ping" events → keepalive, ignore
+          }
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error(`Generate error at step [${step}]:`, err);
+        console.error("Generate error:", err);
         setLoading(false);
-        setError(`[${step}] ${msg}`);
+        setError(msg);
       }
     },
     [form]
