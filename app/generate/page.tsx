@@ -190,6 +190,7 @@ export default function GeneratePage() {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        let navigated = false;
 
         outer: while (true) {
           const { done, value } = await reader.read();
@@ -220,6 +221,7 @@ export default function GeneratePage() {
             if (eventName === "done") {
               const parsed = JSON.parse(dataStr);
               fetch(`/api/guides/${parsed.id}/init-logo`, { method: "POST" }).catch(() => {});
+              navigated = true;
               setDone(true);
               await new Promise((r) => setTimeout(r, 700));
               window.location.href = `/result/${parsed.id}`;
@@ -227,6 +229,11 @@ export default function GeneratePage() {
             }
             // "ping" events → keepalive, ignore
           }
+        }
+
+        // Stream closed without a "done" event (server timeout or crash)
+        if (!navigated) {
+          throw new Error("De server heeft te lang geduurd. Probeer het opnieuw.");
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
