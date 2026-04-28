@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { createBrowserClient } from "@/lib/supabase";
+import MerklyLogo from "@/components/MerklyLogo";
 
 export type AuthMode = "login" | "signup";
 
@@ -119,9 +120,12 @@ export default function AuthForm({ mode }: AuthFormProps) {
     <main className="min-h-screen bg-neutral-950 text-white">
       {/* Nav */}
       <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-5 border-b border-neutral-900/50 bg-neutral-950/80 backdrop-blur-xl">
-        <Link href="/" className="text-xl font-bold tracking-tight">
-          <span className="text-white">Merk</span>
-          <span className="text-violet-400">ly</span>
+        <Link href="/" className="flex items-center gap-2">
+          <MerklyLogo size={28} variant="gradient" />
+          <span className="text-xl font-bold tracking-tight">
+            <span className="text-white">Merk</span>
+            <span className="text-violet-400">ly</span>
+          </span>
         </Link>
       </nav>
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MerklyLogo from "@/components/MerklyLogo";
 import { createServerClient } from "@/lib/supabase";
 import { getUserSubscription } from "@/lib/subscription";
 import { redirect } from "next/navigation";
@@ -28,9 +29,12 @@ export default async function DashboardShell({
     <div className="min-h-screen bg-neutral-950 text-white">
       {/* Top Nav */}
       <nav className="sticky top-0 z-50 flex items-center justify-between px-6 sm:px-8 py-4 border-b border-neutral-900/60 bg-neutral-950/80 backdrop-blur-xl">
-        <Link href="/" className="text-xl font-bold tracking-tight">
-          <span className="text-white">Merk</span>
-          <span className="text-violet-400">ly</span>
+        <Link href="/" className="flex items-center gap-2">
+          <MerklyLogo size={28} variant="gradient" />
+          <span className="text-xl font-bold tracking-tight">
+            <span className="text-white">Merk</span>
+            <span className="text-violet-400">ly</span>
+          </span>
         </Link>
 
         <div className="flex items-center gap-3">

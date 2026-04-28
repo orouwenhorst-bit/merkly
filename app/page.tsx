@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AuthButton from "@/components/AuthButton";
+import MerklyLogo from "@/components/MerklyLogo";
 import { createServerClient } from "@/lib/supabase";
 import { getUserSubscription } from "@/lib/subscription";
 
@@ -15,10 +16,13 @@ export default async function Home() {
 
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 flex items-center justify-between px-6 sm:px-8 py-5 border-b border-neutral-900/50 bg-neutral-950/80 backdrop-blur-xl">
-        <span className="text-xl font-bold tracking-tight">
-          <span className="text-white">Merk</span>
-          <span className="text-violet-400">ly</span>
-        </span>
+        <Link href="/" className="flex items-center gap-2">
+          <MerklyLogo size={28} variant="gradient" />
+          <span className="text-xl font-bold tracking-tight">
+            <span className="text-white">Merk</span>
+            <span className="text-violet-400">ly</span>
+          </span>
+        </Link>
         <div className="flex items-center gap-3 sm:gap-4">
           <Link href="#features" className="hidden sm:block text-sm text-neutral-400 hover:text-white transition-colors">
             Features
@@ -723,10 +727,13 @@ export default async function Home() {
       <footer className="border-t border-neutral-900 px-8 py-12">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-6">
-            <span className="font-bold tracking-tight">
-              <span className="text-white">Merk</span>
-              <span className="text-violet-400">ly</span>
-            </span>
+            <Link href="/" className="flex items-center gap-2">
+              <MerklyLogo size={20} variant="gradient" />
+              <span className="font-bold tracking-tight">
+                <span className="text-white">Merk</span>
+                <span className="text-violet-400">ly</span>
+              </span>
+            </Link>
             <span className="text-sm text-neutral-600">AI-huisstijlgenerator</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-neutral-500">

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import MerklyLogo from "@/components/MerklyLogo";
 
 const INDUSTRIES = [
   "Horeca & Food",
@@ -87,14 +88,7 @@ function ProgressOverlay({ companyName, done }: { companyName: string; done: boo
       <div className="relative w-full max-w-md space-y-8 text-center">
         {/* Animated logo shape */}
         <div className="flex justify-center">
-          <div className="relative">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 animate-pulse" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-3xl font-bold text-white">
-                {companyName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          </div>
+          <MerklyLogo size={80} variant="gradient" className="animate-pulse" />
         </div>
 
         <div>
@@ -220,9 +214,12 @@ export default function GeneratePage() {
       <main className="min-h-screen bg-neutral-950 text-white overflow-x-hidden">
         {/* Nav */}
         <nav className="sticky top-0 z-40 flex items-center justify-between px-8 py-5 border-b border-neutral-900/50 bg-neutral-950/80 backdrop-blur-xl">
-          <a href="/" className="text-xl font-bold tracking-tight">
-            <span className="text-white">Merk</span>
-            <span className="text-violet-400">ly</span>
+          <a href="/" className="flex items-center gap-2">
+            <MerklyLogo size={28} variant="gradient" />
+            <span className="text-xl font-bold tracking-tight">
+              <span className="text-white">Merk</span>
+              <span className="text-violet-400">ly</span>
+            </span>
           </a>
           <a href="/" className="text-sm text-neutral-400 hover:text-white transition-colors">
             ← Terug
