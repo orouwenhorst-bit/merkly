@@ -34,11 +34,13 @@ export async function GET(request: NextRequest) {
     const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      // Stuur welkomstmail alleen bij nieuw account (created_at ≈ now)
+      // Stuur welkomstmail bij elk nieuw account (created_at < 10 min geleden).
+      // Voor email/password: dit is het moment waarop ze de bevestigingslink klikken.
+      // Voor OAuth (Google): direct na de eerste login.
       const user = sessionData?.user;
       if (user?.email) {
         const createdAt = new Date(user.created_at).getTime();
-        const isNew = Date.now() - createdAt < 60_000;
+        const isNew = Date.now() - createdAt < 600_000;
         if (isNew) {
           sendWelcomeEmail(user.email, user.user_metadata?.full_name).catch(
             (e) => console.error("[welcome email]", e)

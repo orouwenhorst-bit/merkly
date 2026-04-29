@@ -107,6 +107,13 @@ export default function AuthForm({ mode }: AuthFormProps) {
         );
         setLoading(false);
       } else {
+        // Stuur bevestigingsmail via onze eigen API (Resend) zodat deze
+        // altijd aankomt, ongeacht Supabase SMTP-configuratie.
+        fetch("/api/send-confirmation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }).catch(() => {});
         setSignupDone(true);
         setLoading(false);
       }
