@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const supabase = createServiceClient();
 
     const { data, error } = await supabase.auth.admin.generateLink({
-      type: "signup",
+      type: "magiclink",
       email,
       options: {
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.merkly.nl"}/auth/callback`,
