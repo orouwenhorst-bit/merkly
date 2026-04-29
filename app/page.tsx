@@ -272,32 +272,30 @@ export default async function Home() {
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                   </svg>
-                  Logo regenereren
+                  Volledig aanpasbaar
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Onbeperkt nieuwe logo&apos;s genereren</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Regenereer elk onderdeel naar wens</h3>
                 <p className="text-neutral-400 text-sm leading-relaxed mb-5">
-                  Niet tevreden met je logo? Genereer met één klik een nieuw concept. Vergelijk oud en nieuw naast elkaar
-                  en kies zelf welke je behoudt, zonder de rest van je huisstijl te verliezen.
+                  Niet blij met je kleuren, typografie of logo? Pas elk onderdeel van je huisstijl individueel aan met één klik.
+                  Kies wat je wil vernieuwen en bewaar de rest — zonder opnieuw te beginnen.
                 </p>
-                {/* Logo vergelijking mockup */}
-                <div className="flex gap-3">
-                  <div className="flex-1 rounded-xl border border-neutral-700 bg-neutral-800/50 p-3">
-                    <p className="text-[9px] text-neutral-600 uppercase tracking-widest mb-2 text-center">Huidig</p>
-                    <div className="h-14 rounded-lg bg-neutral-700/40 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-fuchsia-400 opacity-60" />
-                    </div>
-                  </div>
-                  <div className="flex items-center text-neutral-600">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 rounded-xl border border-violet-500/40 bg-violet-500/5 p-3">
-                    <p className="text-[9px] text-violet-400 uppercase tracking-widest mb-2 text-center font-semibold">Nieuw ✦</p>
-                    <div className="h-14 rounded-lg bg-violet-900/30 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-fuchsia-400 to-cyan-400" />
-                    </div>
-                  </div>
+                {/* Regenereerbare onderdelen */}
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: "Kleuren", color: "bg-violet-500/10 text-violet-300 border-violet-500/30" },
+                    { label: "Typografie", color: "bg-fuchsia-500/10 text-fuchsia-300 border-fuchsia-500/30" },
+                    { label: "Logo", color: "bg-cyan-500/10 text-cyan-300 border-cyan-500/30" },
+                    { label: "Strategie", color: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
+                    { label: "Merkstem", color: "bg-rose-500/10 text-rose-300 border-rose-500/30" },
+                    { label: "Slogans", color: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" },
+                  ].map(({ label, color }) => (
+                    <span key={label} className={`inline-flex items-center gap-1.5 text-xs font-medium border rounded-full px-3 py-1 ${color}`}>
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                      </svg>
+                      {label}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -352,11 +350,11 @@ export default async function Home() {
                 </div>
                 <h3 className="text-base font-bold text-white mb-2">PDF brand guide</h3>
                 <p className="text-neutral-400 text-sm leading-relaxed">
-                  Professioneel 11-pagina PDF-document met je complete merkrichtlijnen.
+                  Professioneel 19-pagina PDF-document met je complete merkrichtlijnen.
                   Print het uit, stuur het naar je designer of gebruik het intern.
                 </p>
                 <div className="mt-4 flex items-center gap-1.5">
-                  <span className="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full px-2 py-0.5">11 pagina's</span>
+                  <span className="text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full px-2 py-0.5">19 pagina's</span>
                   <span className="text-[10px] bg-neutral-800 text-neutral-400 border border-neutral-700 rounded-full px-2 py-0.5">Direct download</span>
                 </div>
               </div>
@@ -594,7 +592,7 @@ export default async function Home() {
             },
             {
               title: "Fractie van de prijs",
-              desc: "Gratis te proberen. Premium voor €18,95/maand, minder dan de koffie bij je eerste bureaugesprek.",
+              desc: "Gratis te proberen. Premium voor €18,95/maand — goedkoper dan één uurtje bij een grafisch bureau.",
               gradient: "from-cyan-500 to-cyan-600",
             },
           ].map(({ title, desc, gradient }) => (
@@ -667,10 +665,10 @@ export default async function Home() {
                 "Alles uit gratis",
                 "Onbeperkt genereren",
                 "Volledige brand guide direct",
-                "Download als PDF (11 pagina's)",
+                "Download als PDF (19 pagina's)",
                 "AI-logo SVG/PNG: 5 varianten",
-                "Onbeperkt logo regenereren",
-                "Slogans regenereren & bewaren",
+                "Elk onderdeel individueel regenereren",
+                "Kleuren, typografie, logo, slogans & meer",
                 "Mockups: visitekaartje, social media",
                 "Voorbeeldteksten & brand voice",
                 "WCAG kleurcontrast-check",
