@@ -35,7 +35,7 @@ const GENERATION_STEPS = [
   { label: "Typografie selecteren", duration: 6000 },
   { label: "Merkverhaal schrijven", duration: 8000 },
   { label: "Brand guide afronden", duration: 8000 },
-  { label: "Logo generatie voorbereiden", duration: 20000 },
+  { label: "Logo genereren met AI", duration: 20000 },
   { label: "Huisstijl voltooien", duration: 5000 },
 ];
 
@@ -220,7 +220,10 @@ export default function GeneratePage() {
 
             if (eventName === "done") {
               const parsed = JSON.parse(dataStr);
-              fetch(`/api/guides/${parsed.id}/init-logo`, { method: "POST" }).catch(() => {});
+              // Only fall back to async logo generation if inline generation failed
+              if (!parsed.result?.logoImageUrl) {
+                fetch(`/api/guides/${parsed.id}/init-logo`, { method: "POST" }).catch(() => {});
+              }
               navigated = true;
               setDone(true);
               await new Promise((r) => setTimeout(r, 700));
@@ -325,9 +328,21 @@ export default function GeneratePage() {
 
               {/* Sfeer dropdown */}
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-1.5">
-                  Gewenste sfeer <span className="text-violet-400">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-300">
+                    Gewenste sfeer <span className="text-violet-400">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const random = MOODS[Math.floor(Math.random() * MOODS.length)];
+                      setForm((f) => ({ ...f, mood: random }));
+                    }}
+                    className="text-xs text-violet-400 hover:text-violet-300 transition-colors"
+                  >
+                    Kies voor mij →
+                  </button>
+                </div>
                 <select
                   value={form.mood}
                   onChange={(e) => setForm({ ...form, mood: e.target.value })}

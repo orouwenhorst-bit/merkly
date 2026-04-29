@@ -3,6 +3,8 @@ import { generateBrandGuideLight, generateBrandGuide } from "@/lib/claude";
 import { calculateAccessibility } from "@/lib/wcag";
 import { createClient, createServerClient } from "@/lib/supabase";
 import { getUserSubscription } from "@/lib/subscription";
+import { generateLogoSvg, storeLogoSvg } from "@/lib/recraft-logo";
+import { deriveLogoVariants } from "@/lib/svg-processing";
 import { BrandInput } from "@/types/brand";
 
 export const dynamic = "force-dynamic";
@@ -97,7 +99,49 @@ export async function POST(req: NextRequest) {
 
         if (error) throw new Error(`[supabase-insert] ${error.message}`);
 
-        sse("done", { id: saved.id, result });
+        // Logo generatie inline (Recraft V4 SVG) — snel genoeg met Haiku binnen 60s
+        let finalResult: typeof resultWithInput = resultWithInput;
+        if (process.env.RECRAFT_API_KEY) {
+          try {
+            const colors = result.colorPalette?.colors ?? [];
+            const primaryColor =
+              body.preferredColor ||
+              colors.find((c: { category: string; hex: string }) => c.category === "primary")?.hex ||
+              colors[0]?.hex ||
+              "#000000";
+            const brandPersonality =
+              (result as { strategy?: { personalityTraits?: string[] } }).strategy?.personalityTraits ??
+              (result as { brandPersonality?: string[] }).brandPersonality ??
+              [];
+
+            const v4Result = await generateLogoSvg(body.industry, body.mood, primaryColor, brandPersonality);
+            if (v4Result) {
+              const variants = deriveLogoVariants(v4Result.svg, primaryColor);
+              const primarySvg = variants.monoPrimary;
+              const publicUrl = await storeLogoSvg(saved.id, primarySvg);
+
+              finalResult = {
+                ...resultWithInput,
+                logoImageUrl: publicUrl ?? undefined,
+                iconSvg: undefined,
+                logoVariants: {
+                  fullColor: primarySvg,
+                  monoBlack: variants.monoBlack,
+                  monoWhite: variants.monoWhite,
+                  monoPrimary: variants.monoPrimary,
+                  transparent: primarySvg,
+                  recraftImageId: v4Result.imageId,
+                },
+              };
+
+              await supabase.from("brand_guides").update({ result: finalResult }).eq("id", saved.id);
+            }
+          } catch (logoErr) {
+            console.error("Inline logo generation failed, client will fallback to init-logo:", logoErr);
+          }
+        }
+
+        sse("done", { id: saved.id, result: finalResult });
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error("Generate stream error:", msg);
