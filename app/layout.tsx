@@ -86,11 +86,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon.ico" },
     ],
     shortcut: "/favicon.ico",
-    apple: { url: "/logo-favicon.png", sizes: "512x512" },
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180" },
+      { url: "/logo-favicon.png", sizes: "512x512" },
+    ],
   },
 };
 
@@ -104,97 +108,105 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-const jsonLd = [
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "@id": `${siteUrl}/#website`,
-    url: `${siteUrl}/`,
-    name: "Merkly",
-    description:
-      "AI-huisstijlgenerator voor Nederlandse ondernemers: logo, kleurenpalet, typografie en merkverhaal in minder dan twee minuten.",
-    inLanguage: "nl-NL",
+const jsonLdWebSite = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${siteUrl}/#website`,
+  url: `${siteUrl}/`,
+  name: "Merkly",
+  description:
+    "AI-huisstijlgenerator voor Nederlandse ondernemers: logo, kleurenpalet, typografie en merkverhaal in minder dan twee minuten.",
+  inLanguage: "nl-NL",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${siteUrl}/?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
   },
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": `${siteUrl}/#organization`,
-    name: "Merkly",
-    url: `${siteUrl}/`,
-    logo: {
-      "@type": "ImageObject",
-      url: `${siteUrl}/logo-favicon.png`,
-      width: 512,
-      height: 512,
-    },
-    description:
-      "Merkly is een Nederlandse SaaS-tool waarmee ondernemers in minder dan twee minuten een complete merkidentiteit genereren met AI: logo, kleurenpalet, typografie, merkverhaal en copy.",
-    foundingDate: "2025",
-    areaServed: { "@type": "Country", name: "Nederland" },
-    inLanguage: "nl-NL",
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: "Lokomotiefstraat 14",
-      addressLocality: "Apeldoorn",
-      postalCode: "7331 AC",
-      addressCountry: "NL",
-    },
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "customer support",
-      email: "info@merkly.nl",
-      availableLanguage: "Dutch",
-    },
+};
+
+const jsonLdOrganization = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${siteUrl}/#organization`,
+  name: "Merkly",
+  url: `${siteUrl}/`,
+  logo: {
+    "@type": "ImageObject",
+    url: `${siteUrl}/logo-favicon.png`,
+    width: 512,
+    height: 512,
   },
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "@id": `${siteUrl}/#software`,
-    name: "Merkly",
-    url: `${siteUrl}/`,
-    description:
-      "AI-powered merkidentiteitsgenerator voor Nederlandse ondernemers. Genereer in minder dan twee minuten een compleet brand kit: logo, kleurenpalet, typografie, merkverhaal, tone of voice en kant-en-klare copy.",
-    applicationCategory: "BusinessApplication",
-    operatingSystem: "Web",
-    inLanguage: "nl-NL",
-    offers: [
-      {
-        "@type": "Offer",
-        name: "Gratis",
+  description:
+    "Merkly is een Nederlandse SaaS-tool waarmee ondernemers in minder dan twee minuten een complete merkidentiteit genereren met AI: logo, kleurenpalet, typografie, merkverhaal en copy.",
+  foundingDate: "2025",
+  areaServed: { "@type": "Country", name: "Nederland" },
+  inLanguage: "nl-NL",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Lokomotiefstraat 14",
+    addressLocality: "Apeldoorn",
+    postalCode: "7331 AC",
+    addressCountry: "NL",
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer support",
+    email: "info@merkly.nl",
+    availableLanguage: "Dutch",
+  },
+};
+
+const jsonLdSoftware = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": `${siteUrl}/#software`,
+  name: "Merkly",
+  url: `${siteUrl}/`,
+  description:
+    "AI-powered merkidentiteitsgenerator voor Nederlandse ondernemers. Genereer in minder dan twee minuten een compleet brand kit: logo, kleurenpalet, typografie, merkverhaal, tone of voice en kant-en-klare copy.",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  inLanguage: "nl-NL",
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Gratis",
+      price: "0",
+      priceCurrency: "EUR",
+      description:
+        "Kleurenpalet, typografie, merkverhaal, tone of voice en merkpersoonlijkheid. Tot 3 generaties per dag.",
+      availability: "https://schema.org/InStock",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
         price: "0",
         priceCurrency: "EUR",
-        description:
-          "Kleurenpalet, typografie, merkverhaal, tone of voice en merkpersoonlijkheid. Tot 3 generaties per dag.",
-        availability: "https://schema.org/InStock",
-        priceSpecification: {
-          "@type": "UnitPriceSpecification",
-          price: "0",
-          priceCurrency: "EUR",
-          billingDuration: "P1M",
-          unitCode: "MON",
-        },
+        billingDuration: "P1M",
+        unitCode: "MON",
       },
-      {
-        "@type": "Offer",
-        name: "Merkly Premium",
+    },
+    {
+      "@type": "Offer",
+      name: "Merkly Premium",
+      price: "18.95",
+      priceCurrency: "EUR",
+      description:
+        "Onbeperkt genereren, AI-logo in SVG/PNG (5 varianten), PDF brand guide (19 pagina's), mockups, slogans, voorbeeldteksten en WCAG kleurcontrast-check.",
+      availability: "https://schema.org/InStock",
+      url: `${siteUrl}/upgrade`,
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
         price: "18.95",
         priceCurrency: "EUR",
-        description:
-          "Onbeperkt genereren, AI-logo in SVG/PNG (5 varianten), PDF brand guide (19 pagina's), mockups, slogans, voorbeeldteksten en WCAG kleurcontrast-check.",
-        availability: "https://schema.org/InStock",
-        url: `${siteUrl}/upgrade`,
-        priceSpecification: {
-          "@type": "UnitPriceSpecification",
-          price: "18.95",
-          priceCurrency: "EUR",
-          billingDuration: "P1M",
-          unitCode: "MON",
-        },
+        billingDuration: "P1M",
+        unitCode: "MON",
       },
-    ],
-    publisher: { "@id": `${siteUrl}/#organization` },
-  },
-];
+    },
+  ],
+  publisher: { "@id": `${siteUrl}/#organization` },
+};
 
 export default function RootLayout({
   children,
@@ -209,7 +221,15 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSoftware) }}
         />
       </head>
       <body className="min-h-full flex flex-col">
