@@ -40,6 +40,36 @@ export const blogPosts: BlogPost[] = [
     category: "AI & technologie",
     categorySlug: "ai",
   },
+  {
+    slug: "merkidentiteit-opbouwen",
+    title: "Merkidentiteit opbouwen: stap-voor-stap handleiding",
+    description:
+      "Een sterke merkidentiteit bouw je stap voor stap op. Van merkfundament en doelgroep tot visuele identiteit en brand guide — alles wat je moet weten.",
+    publishedAt: "2026-04-30",
+    readingTime: 6,
+    category: "Branding basics",
+    categorySlug: "branding",
+  },
+  {
+    slug: "huisstijl-zzp",
+    title: "Huisstijl als ZZP'er: wat heb je écht nodig?",
+    description:
+      "Als ZZP'er concurreer je met grotere bedrijven. Een professionele huisstijl helpt je serieus genomen te worden — ook met een klein budget.",
+    publishedAt: "2026-04-30",
+    readingTime: 5,
+    category: "ZZP & MKB",
+    categorySlug: "zzp",
+  },
+  {
+    slug: "logo-laten-maken",
+    title: "Logo laten maken: alle opties en kosten op een rij",
+    description:
+      "Van AI-generator tot bureau: een eerlijk overzicht van hoe je een logo laat maken, wat het kost en welke bestanden je altijd moet ontvangen.",
+    publishedAt: "2026-04-30",
+    readingTime: 5,
+    category: "Logo & design",
+    categorySlug: "logo",
+  },
 ];
 
 export function getAllPosts(): BlogPost[] {

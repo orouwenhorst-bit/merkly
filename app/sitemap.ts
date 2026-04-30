@@ -18,6 +18,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/blog`,
       lastModified: new Date("2026-04-30"),
     },
+    {
+      url: `${siteUrl}/huisstijl-generator`,
+      lastModified: new Date("2026-04-30"),
+    },
     ...blogEntries,
     {
       url: `${siteUrl}/generate`,

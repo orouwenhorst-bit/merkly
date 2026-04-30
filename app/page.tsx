@@ -84,6 +84,9 @@ export default function Home() {
           <Link href="#pricing" className="hidden sm:block text-sm text-neutral-400 hover:text-white transition-colors">
             Prijzen
           </Link>
+          <Link href="/blog" className="hidden sm:block text-sm text-neutral-400 hover:text-white transition-colors">
+            Blog
+          </Link>
           <NavAuth />
         </div>
       </nav>
@@ -788,6 +791,56 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Blog teaser ── */}
+      <section className="max-w-4xl mx-auto px-6 pb-28">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <p className="text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-2">Kennisbank</p>
+            <h2 className="text-2xl sm:text-3xl font-bold">Leer meer over branding</h2>
+          </div>
+          <Link href="/blog" className="text-sm text-violet-400 hover:text-violet-300 transition-colors hidden sm:block">
+            Alle artikelen →
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            {
+              title: "Wat is een huisstijl?",
+              desc: "De complete gids: onderdelen, belang en hoe je begint.",
+              slug: "wat-is-een-huisstijl",
+              cat: "Branding basics",
+            },
+            {
+              title: "Huisstijl kosten 2026",
+              desc: "Eerlijk overzicht van freelancer tot AI-tool.",
+              slug: "huisstijl-kosten",
+              cat: "Kosten & budgetten",
+            },
+            {
+              title: "AI huisstijl generator",
+              desc: "Hoe het werkt en wat het oplevert voor jouw merk.",
+              slug: "ai-huisstijl-generator",
+              cat: "AI & technologie",
+            },
+          ].map(({ title, desc, slug, cat }) => (
+            <Link
+              key={slug}
+              href={`/blog/${slug}`}
+              className="group bg-neutral-900/50 border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 hover:bg-neutral-900 transition-all"
+            >
+              <span className="text-[11px] font-medium text-violet-400">{cat}</span>
+              <h3 className="text-sm font-semibold text-white mt-2 mb-1.5 group-hover:text-violet-300 transition-colors leading-snug">{title}</h3>
+              <p className="text-xs text-neutral-500 leading-relaxed">{desc}</p>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-4 sm:hidden text-center">
+          <Link href="/blog" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+            Alle artikelen →
+          </Link>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="relative max-w-4xl mx-auto px-6 pb-28">
         <div className="relative bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 border border-violet-500/20 rounded-3xl p-12 text-center overflow-hidden">
@@ -835,11 +888,12 @@ export default function Home() {
             <Link href="#features" className="hover:text-white transition-colors">Features</Link>
             <Link href="#premium" className="hover:text-white transition-colors">Premium</Link>
             <Link href="#pricing" className="hover:text-white transition-colors">Prijzen</Link>
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
             <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
           </div>
         </div>
         <div className="max-w-6xl mx-auto mt-8 pt-6 border-t border-neutral-900/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-neutral-700">&copy; 2026 Merkly. Alle rechten voorbehouden.</p>
+          <p className="text-xs text-neutral-700">&copy; 2026 Merkly &middot; KvK 98654500 &middot; Alle rechten voorbehouden.</p>
           <div className="flex items-center gap-4 text-xs text-neutral-700">
             <Link href="/privacy" className="hover:text-neutral-400 transition-colors">Privacybeleid</Link>
             <Link href="/voorwaarden" className="hover:text-neutral-400 transition-colors">Algemene voorwaarden</Link>

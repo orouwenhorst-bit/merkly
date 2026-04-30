@@ -46,6 +46,18 @@ async function getContent(slug: string) {
       const { default: Content } = await import("@/lib/blog-posts/ai-huisstijl-generator");
       return Content;
     }
+    case "merkidentiteit-opbouwen": {
+      const { default: Content } = await import("@/lib/blog-posts/merkidentiteit-opbouwen");
+      return Content;
+    }
+    case "huisstijl-zzp": {
+      const { default: Content } = await import("@/lib/blog-posts/huisstijl-zzp");
+      return Content;
+    }
+    case "logo-laten-maken": {
+      const { default: Content } = await import("@/lib/blog-posts/logo-laten-maken");
+      return Content;
+    }
     default:
       return null;
   }
