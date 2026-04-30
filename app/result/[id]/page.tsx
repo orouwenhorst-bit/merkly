@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient, createServerClient } from "@/lib/supabase";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 import { BrandGuideResult } from "@/types/brand";
 import BrandGuidePreview from "@/components/BrandGuidePreview";
 import ShareButton from "@/components/ShareButton";

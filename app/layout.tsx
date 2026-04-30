@@ -18,7 +18,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.merkly.nl";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Merkly | Jouw complete merkidentiteit in minuten",
+    default: "Merkly — AI Huisstijl Generator | Merkidentiteit in 2 minuten",
     template: "%s | Merkly",
   },
   description:

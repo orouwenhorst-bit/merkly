@@ -1,18 +1,69 @@
 import Link from "next/link";
-import AuthButton from "@/components/AuthButton";
 import MerklyLogo from "@/components/MerklyLogo";
-import { createServerClient } from "@/lib/supabase";
-import { getUserSubscription } from "@/lib/subscription";
+import NavAuth from "@/components/NavAuth";
 
-export const dynamic = "force-dynamic";
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Is Merkly gratis te gebruiken?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Ja. Het gratis plan geeft je toegang tot kleurenpalet, typografie, merkverhaal, tone of voice en merkpersoonlijkheid — tot 3 generaties per dag, zonder account. Merkly Premium kost €18,95 per maand en biedt onbeperkt genereren, AI-logo's, PDF download en meer.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Wat zit er precies in een brand guide?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Een Merkly brand guide bevat: een kleurenpalet (7 kleuren met hex-codes en gebruiksregels), een typografiepaar van Google Fonts met hiërarchie, missie, visie en kernwaarden, een merkverhaal, tone of voice met do's & don'ts, en 5 merkpersoonlijkheidskenmerken. Premium voegt daar logo-varianten, mockups, slogans en voorbeeldteksten aan toe.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Hoe lang duurt het genereren van een huisstijl?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Merkly genereert een complete merkidentiteit in minder dan twee minuten. Je vult in één minuut de basisgegevens in (bedrijfsnaam, branche, sfeer, doelgroep), waarna de AI direct aan de slag gaat.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Wat is het verschil met Canva of Looka?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Canva is een ontwerptool: jij maakt het design. Looka genereert voornamelijk logo's. Merkly genereert een complete merkstrategie: naast visuele elementen (kleuren, typografie, logo) krijg je ook je merkverhaal, tone of voice en kant-en-klare copy — allemaal afgestemd op jouw branche en doelgroep. Speciaal ontwikkeld voor de Nederlandse markt.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Kan ik mijn huisstijl later nog aanpassen?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Met Merkly Premium kun je elk onderdeel van je huisstijl individueel regenereren: kleuren, typografie, logo, strategie, merkstem en slogans. Je behoudt de delen die je wilt en vernieuwt alleen wat je anders wil hebben — zonder opnieuw te beginnen.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Heb ik een account nodig om Merkly te gebruiken?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Nee. Je kunt Merkly gratis proberen zonder account aan te maken. Je ontvangt direct een online brand guide via een unieke link. Voor Premium functies en het opslaan van meerdere huisstijlen heb je wel een account nodig.",
+      },
+    },
+  ],
+};
 
-export default async function Home() {
-  const supabase = await createServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const isPremium = user ? (await getUserSubscription(user.id)).isPremium : false;
-
+export default function Home() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
 
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 flex items-center justify-between px-6 sm:px-8 py-5 border-b border-neutral-900/50 bg-neutral-950/80 backdrop-blur-xl">
@@ -33,17 +84,7 @@ export default async function Home() {
           <Link href="#pricing" className="hidden sm:block text-sm text-neutral-400 hover:text-white transition-colors">
             Prijzen
           </Link>
-          {(!user || !isPremium) && (
-            <Link href="/generate" className="hidden sm:inline text-sm text-neutral-400 hover:text-white transition-colors">
-              {user ? "Genereer" : "Probeer gratis"}
-            </Link>
-          )}
-          {user && isPremium && (
-            <Link href="/dashboard" className="text-sm text-neutral-400 hover:text-white transition-colors">
-              Dashboard
-            </Link>
-          )}
-          <AuthButton />
+          <NavAuth />
         </div>
       </nav>
 
@@ -86,7 +127,7 @@ export default async function Home() {
             Bekijk Premium features
           </Link>
         </div>
-        <p className="relative text-sm text-neutral-600 mt-4">Geen account nodig &middot; Gratis te proberen</p>
+        <p className="relative text-sm text-neutral-400 mt-4">Geen account nodig &middot; Gratis te proberen</p>
 
         {/* Kleurenswatch preview */}
         <div className="relative mt-16 flex items-center gap-3">
@@ -99,7 +140,7 @@ export default async function Home() {
           ].map(({ color }, i) => (
             <div
               key={i}
-              className={`w-12 h-12 sm:w-16 sm:h-16 ${color} rounded-xl animate-bounce`}
+              className={`w-12 h-12 sm:w-16 sm:h-16 ${color} rounded-xl motion-safe:animate-bounce`}
               style={{ animationDuration: "3s", animationDelay: `${i * 0.2}s` }}
             />
           ))}
@@ -689,6 +730,61 @@ export default async function Home() {
               Start Premium
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section className="max-w-3xl mx-auto px-6 pb-28">
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-4">Veelgestelde vragen</h2>
+        <p className="text-neutral-400 text-center mb-12 max-w-md mx-auto">
+          Alles wat je wilt weten over Merkly en AI-branding.
+        </p>
+        <div className="space-y-4">
+          {[
+            {
+              q: "Is Merkly gratis te gebruiken?",
+              a: "Ja. Het gratis plan geeft je toegang tot kleurenpalet, typografie, merkverhaal, tone of voice en merkpersoonlijkheid — tot 3 generaties per dag, zonder account. Merkly Premium kost €18,95 per maand en biedt onbeperkt genereren, AI-logo's, PDF download en meer.",
+            },
+            {
+              q: "Wat zit er precies in een brand guide?",
+              a: "Een Merkly brand guide bevat: een kleurenpalet (7 kleuren met hex-codes en gebruiksregels), een typografiepaar van Google Fonts met hiërarchie, missie, visie en kernwaarden, een merkverhaal, tone of voice met do's & don'ts, en 5 merkpersoonlijkheidskenmerken. Premium voegt daar logo-varianten, mockups, slogans en voorbeeldteksten aan toe.",
+            },
+            {
+              q: "Hoe lang duurt het genereren van een huisstijl?",
+              a: "Merkly genereert een complete merkidentiteit in minder dan twee minuten. Je vult in één minuut de basisgegevens in (bedrijfsnaam, branche, sfeer, doelgroep), waarna de AI direct aan de slag gaat. De logo-generatie via Recraft AI kan iets langer duren.",
+            },
+            {
+              q: "Wat is het verschil met Canva of Looka?",
+              a: "Canva is een ontwerptool: jij maakt het design. Looka genereert voornamelijk logo's. Merkly genereert een complete merkstrategie: naast visuele elementen (kleuren, typografie, logo) krijg je ook je merkverhaal, tone of voice en kant-en-klare copy — allemaal afgestemd op jouw branche en doelgroep. Speciaal ontwikkeld voor de Nederlandse markt.",
+            },
+            {
+              q: "Kan ik mijn huisstijl later nog aanpassen?",
+              a: "Met Merkly Premium kun je elk onderdeel van je huisstijl individueel regenereren: kleuren, typografie, logo, strategie, merkstem en slogans. Je behoudt de delen die je wilt en vernieuwt alleen wat je anders wil hebben — zonder opnieuw te beginnen.",
+            },
+            {
+              q: "Heb ik een account nodig om Merkly te gebruiken?",
+              a: "Nee. Je kunt Merkly gratis proberen zonder account aan te maken. Je ontvangt direct een online brand guide via een unieke link. Voor Premium functies en het opslaan van meerdere huisstijlen heb je wel een account nodig.",
+            },
+          ].map(({ q, a }) => (
+            <details
+              key={q}
+              className="group bg-neutral-900/50 border border-neutral-800 rounded-2xl overflow-hidden"
+            >
+              <summary className="flex items-center justify-between px-6 py-5 cursor-pointer text-base font-medium text-white list-none hover:bg-neutral-900 transition-colors">
+                {q}
+                <svg
+                  className="w-5 h-5 text-neutral-500 shrink-0 ml-4 transition-transform group-open:rotate-180"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="px-6 pb-5 text-sm text-neutral-400 leading-relaxed">{a}</p>
+            </details>
+          ))}
         </div>
       </section>
 
