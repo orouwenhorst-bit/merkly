@@ -10,6 +10,9 @@ export const dynamic = "force-dynamic";
 
 const ADMIN_EMAIL = "o.rouwenhorst@gmail.com";
 
+// Alleen data vanaf deze datum tellen — alles daarvoor was testdata.
+const LIVE_SINCE = "2026-05-06T00:00:00.000Z";
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function groupBy<T>(arr: T[], key: (item: T) => string): Record<string, number> {
@@ -56,7 +59,7 @@ export default async function AdminPage() {
   const monthStart = new Date(today); monthStart.setDate(1);
   const thirtyDaysAgo = new Date(today); thirtyDaysAgo.setDate(today.getDate() - 29);
 
-  // ── Parallel data fetching ────────────────────────────────────────────────
+  // ── Parallel data fetching — alles gefilterd op LIVE_SINCE ──────────────
   const [
     { count: totalGenerations },
     { count: todayCount },
@@ -70,16 +73,16 @@ export default async function AdminPage() {
     { data: premiumProfiles },
     { data: linkedinCampaigns },
   ] = await Promise.all([
-    supabase.from("brand_guides").select("*", { count: "exact", head: true }),
+    supabase.from("brand_guides").select("*", { count: "exact", head: true }).gte("created_at", LIVE_SINCE),
     supabase.from("brand_guides").select("*", { count: "exact", head: true }).gte("created_at", today.toISOString()),
     supabase.from("brand_guides").select("*", { count: "exact", head: true }).gte("created_at", weekStart.toISOString()),
     supabase.from("brand_guides").select("*", { count: "exact", head: true }).gte("created_at", monthStart.toISOString()),
-    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("subscription_status", "premium"),
-    supabase.from("brand_guides").select("industry, mood, user_id, is_premium"),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).eq("subscription_status", "premium").gte("upgraded_at", LIVE_SINCE),
+    supabase.from("brand_guides").select("industry, mood, user_id, is_premium").gte("created_at", LIVE_SINCE),
     supabase.from("brand_guides").select("created_at, is_premium").gte("created_at", thirtyDaysAgo.toISOString()),
-    supabase.from("brand_guides").select("id, company_name, industry, created_at, is_premium, user_id, updated_at").order("created_at", { ascending: false }).limit(20),
-    supabase.from("analytics_events").select("event_type, created_at, user_id").gte("created_at", monthStart.toISOString()),
-    supabase.from("profiles").select("user_id, upgraded_at").eq("subscription_status", "premium").not("upgraded_at", "is", null),
+    supabase.from("brand_guides").select("id, company_name, industry, created_at, is_premium, user_id, updated_at").gte("created_at", LIVE_SINCE).order("created_at", { ascending: false }).limit(20),
+    supabase.from("analytics_events").select("event_type, created_at, user_id").gte("created_at", LIVE_SINCE),
+    supabase.from("profiles").select("user_id, upgraded_at").eq("subscription_status", "premium").not("upgraded_at", "is", null).gte("upgraded_at", LIVE_SINCE),
     supabase.from("linkedin_campaigns").select("*").order("week_start", { ascending: false }).limit(16),
   ]);
 
@@ -121,10 +124,11 @@ export default async function AdminPage() {
     }
   }
 
-  // Chart data: generaties per dag, afgelopen 30 dagen
+  // Chart data: generaties per dag, afgelopen 30 dagen (nooit vóór LIVE_SINCE)
+  const liveFrom = new Date(Math.max(thirtyDaysAgo.getTime(), new Date(LIVE_SINCE).getTime()));
   const chartData = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(thirtyDaysAgo);
-    d.setDate(thirtyDaysAgo.getDate() + i);
+    const d = new Date(liveFrom);
+    d.setDate(liveFrom.getDate() + i);
     const dateStr = d.toISOString().slice(0, 10);
     const dayGuides = (chartGuides ?? []).filter((g) => g.created_at.startsWith(dateStr));
     return { date: dateStr, total: dayGuides.length, premium: dayGuides.filter((g) => g.is_premium).length };
@@ -165,7 +169,12 @@ export default async function AdminPage() {
 
         {/* ── Overzicht metrics ── */}
         <section>
-          <SectionTitle>Overzicht</SectionTitle>
+          <div className="flex items-baseline gap-3 mb-3">
+            <SectionTitle>Overzicht</SectionTitle>
+            <span className="text-xs text-neutral-600">
+              Telt vanaf {new Date(LIVE_SINCE).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })} — testdata uitgesloten
+            </span>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <StatCard label="Totaal generaties" value={totalGenerations ?? 0} accent />
             <StatCard label="Vandaag" value={todayCount ?? 0} />
