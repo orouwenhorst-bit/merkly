@@ -4,6 +4,7 @@ import { getUserSubscription } from "@/lib/subscription";
 import { generateLogoSvg } from "@/lib/recraft-logo";
 import { deriveLogoVariants } from "@/lib/svg-processing";
 import type { BrandGuideResult } from "@/types/brand";
+import { trackEvent } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -78,6 +79,8 @@ export async function POST(
 
     const variants = deriveLogoVariants(v4Result.svg, primaryColor);
     const primarySvg = variants.monoPrimary;
+
+    trackEvent("logo_regenerated", { userId: user.id, guideId: id });
 
     // Return variants without saving — client picks old or new via apply-logo
     return NextResponse.json({

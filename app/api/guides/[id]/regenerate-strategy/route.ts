@@ -4,6 +4,7 @@ import {
   generateJsonSection,
   buildBrandContextBlock,
 } from "@/lib/regenerate-helpers";
+import { trackEvent } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,7 @@ Retourneer ALLEEN een JSON-array met 3 strategieën. Geen markdown, geen tekst:
       throw new Error("Geen geldige array");
     }
 
+    trackEvent("strategy_regenerated", { userId: ctx.userId, guideId: ctx.guideId });
     return NextResponse.json({ strategies });
   } catch (err) {
     console.error("regenerate-strategy error:", err);

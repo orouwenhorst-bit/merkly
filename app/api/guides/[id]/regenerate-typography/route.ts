@@ -5,6 +5,7 @@ import {
   buildBrandContextBlock,
 } from "@/lib/regenerate-helpers";
 import type { FontSpec, TypeScaleEntry } from "@/types/brand";
+import { trackEvent } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +77,7 @@ Retourneer ALLEEN een JSON-array met 4 koppels. Geen markdown, geen tekst:
       throw new Error("Geen geldige array");
     }
 
+    trackEvent("typography_regenerated", { userId: ctx.userId, guideId: ctx.guideId });
     return NextResponse.json({ pairings });
   } catch (err) {
     console.error("regenerate-typography error:", err);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase";
 import { sendPremiumEmail } from "@/lib/email";
+import { trackEvent } from "@/lib/analytics";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
           .update({
             stripe_subscription_id: subscriptionId,
             subscription_status: "premium",
+            upgraded_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq("user_id", userId);
@@ -46,6 +48,7 @@ export async function POST(req: NextRequest) {
         if (error) {
           console.error("Failed to set premium status:", error);
         } else {
+          trackEvent("upgraded_to_premium", { userId });
           // Stuur premium activatie mail
           const email = session.customer_details?.email;
           const name = session.customer_details?.name ?? undefined;
@@ -93,7 +96,19 @@ export async function POST(req: NextRequest) {
         })
         .eq("stripe_customer_id", customerId);
 
-      if (error) console.error("Failed to cancel subscription:", error);
+      if (error) {
+        console.error("Failed to cancel subscription:", error);
+      } else {
+        // Zoek user_id via customer_id voor de event log
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("user_id")
+          .eq("stripe_customer_id", customerId)
+          .single();
+        if (profile?.user_id) {
+          trackEvent("subscription_cancelled", { userId: profile.user_id });
+        }
+      }
       break;
     }
 

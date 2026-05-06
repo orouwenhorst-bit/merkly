@@ -5,6 +5,7 @@ import {
   buildBrandContextBlock,
 } from "@/lib/regenerate-helpers";
 import type { ColorPalette } from "@/types/brand";
+import { trackEvent } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,7 @@ Retourneer ALLEEN een JSON-array met 4 paletten. Geen markdown, geen tekst:
       throw new Error("Geen geldige array");
     }
 
+    trackEvent("colors_regenerated", { userId: ctx.userId, guideId: ctx.guideId });
     return NextResponse.json({ palettes });
   } catch (err) {
     console.error("regenerate-colors error:", err);

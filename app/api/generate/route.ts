@@ -6,6 +6,7 @@ import { getUserSubscription } from "@/lib/subscription";
 import { generateLogoSvg, storeLogoSvg } from "@/lib/recraft-logo";
 import { deriveLogoVariants } from "@/lib/svg-processing";
 import { BrandInput } from "@/types/brand";
+import { trackEvent } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Vercel Hobby plan maximum
@@ -54,6 +55,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Log generation start (voor funnel-analyse)
+  trackEvent("generation_started", {
+    userId: user?.id,
+    metadata: { isPremium: isPremiumUser, industry: body.industry, mood: body.mood },
+  });
+
   // Stream SSE events so the connection stays alive during Claude generation
   const encoder = new TextEncoder();
   const userId = user?.id ?? null;
@@ -98,6 +105,12 @@ export async function POST(req: NextRequest) {
           .single();
 
         if (error) throw new Error(`[supabase-insert] ${error.message}`);
+
+        trackEvent("generation_completed", {
+          userId,
+          guideId: saved.id,
+          metadata: { isPremium: isPremiumUser, industry: body.industry, mood: body.mood },
+        });
 
         // Logo generatie inline (Recraft V4 SVG) — snel genoeg met Haiku binnen 60s
         let finalResult: typeof resultWithInput = resultWithInput;

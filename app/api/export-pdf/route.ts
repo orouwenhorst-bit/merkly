@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateBrandBookPDF } from "@/lib/brand-book-pdf";
 import { createClient } from "@/lib/supabase";
 import { BrandGuideResult } from "@/types/brand";
+import { trackEvent } from "@/lib/analytics";
 
 export const dynamic = "force-dynamic";
 // react-pdf + Google Font fetching don't fit in a short edge timeout
@@ -27,6 +28,11 @@ export async function POST(req: NextRequest) {
 
     const result = guide.result as BrandGuideResult;
     const pdfBuffer = await generateBrandBookPDF(result);
+
+    trackEvent("pdf_downloaded", {
+      userId: guide.user_id ?? undefined,
+      guideId: guideId,
+    });
 
     const safeName = result.companyName
       .replace(/[^a-zA-Z0-9-]/g, "-")
